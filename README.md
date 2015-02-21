@@ -2,11 +2,11 @@
 *useragent* is a library written in [golang](http://golang.org) to parse [user agent strings](http://useragentstring.com/).
 
 # Usage
-
+Install the library with:
 ```
 go get github.com/xojoc/useragent       
 ```
-
+*useragent* is simple to use. Parse a string with [useragent.Parse](http://godoc.org/github.com/xojoc/useragent#Parse) and access the fields of [useragent.UserAgent](http://godoc.org/github.com/xojoc/useragent#UserAgent) for the required information:
 ```
 package main
 
@@ -26,7 +26,7 @@ func main() {
 }
 
 ```
-
+see also [godoc](http://godoc.org/github.com/xojoc/useragent).
 # How it works
 
 There is no standard for user agent strings, so *useragent* must use some heuristics. The site [http://www.useragentstring.com/](http://www.useragentstring.com/pages/useragentstring.php) has been invaluable during development. This parser so far recognizes:
@@ -37,6 +37,8 @@ There is no standard for user agent strings, so *useragent* must use some heuris
 
 **More is coming...**
 If you need support for a particular user agent just open an issue :).
+
+*useragent* uses [blang/semver](https://github.com/blang/semver) for version parsing/handling.
 
 # Who?
 *useragent* was written by Alexandru Cojocaru ([http://xojoc.pw](http://xojoc.pw)), [blang/semver](https://github.com/blang/semver) is used to parse versions.
