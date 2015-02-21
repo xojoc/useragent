@@ -13,6 +13,7 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+// Package useragent parses a user agent string
 package useragent
 
 import (
@@ -32,6 +33,7 @@ const (
 	TypeLibrary
 )
 
+// Some browsers may put security level information in their user agent.
 type Security int
 
 const (
@@ -40,11 +42,6 @@ const (
 	SecurityWeak
 	SecurityStrong
 )
-
-type Version struct {
-	Major uint64
-	Minor uint64
-}
 
 type UserAgent struct {
 	Type     AgentType
@@ -63,6 +60,8 @@ func newUserAgent() *UserAgent {
 
 type parseFn func(l *lex) *UserAgent
 
+// Try to extract information about an user agent from uas.
+// Since user agent strings don't have a standard, this function uses heuristics.
 func Parse(uas string) *UserAgent {
 	// we try each user agent parser in order until we get one that succeeds
 	for _, f := range []parseFn{parseFirefoxLike, parseChrome, parseDillo, parseGoogleBot} {
