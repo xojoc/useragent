@@ -135,6 +135,11 @@ func TestGoogleBot(t *testing.T) {
 }
 
 func ExampleParse() {
-	fmt.Print("hello")
-	// Output: hello
+	ua := Parse("Mozilla/5.0 (X11; Linux i686; rv:38.0) Gecko/20100101 Firefox/38.0")
+	fmt.Print(ua)
+	// Output: Type: Browser
+	//Name: firefox
+	//Version: 38.0.0
+	//OS: gnu/linux
+	//Security: Unknown security
 }
