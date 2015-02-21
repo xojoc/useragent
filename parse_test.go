@@ -21,6 +21,16 @@ import (
 	"testing"
 )
 
+func ExampleParse() {
+	ua := Parse("Mozilla/5.0 (X11; Linux i686; rv:38.0) Gecko/20100101 Firefox/38.0")
+	fmt.Print(ua)
+	// Output: Type: Browser
+	//Name: firefox
+	//Version: 38.0.0
+	//OS: gnu/linux
+	//Security: Unknown security
+}
+
 func eqUA(a *UserAgent, b *UserAgent) bool {
 	if a == nil || b == nil {
 		return false
@@ -118,6 +128,21 @@ func TestDillo(t *testing.T) {
 	}
 }
 
+func TestIE(t *testing.T) {
+	var got *UserAgent
+	want := &UserAgent{}
+
+	got = Parse(`Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)`)
+	want.Type = TypeBrowser
+	want.OS = "windows"
+	want.Name = "ie"
+	want.Version = mustParse("10.0.0")
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+}
+
 func TestGoogleBot(t *testing.T) {
 	var got *UserAgent
 	want := &UserAgent{}
@@ -132,14 +157,4 @@ func TestGoogleBot(t *testing.T) {
 		t.Errorf("expected %+v, got %+v\n", want, got)
 	}
 
-}
-
-func ExampleParse() {
-	ua := Parse("Mozilla/5.0 (X11; Linux i686; rv:38.0) Gecko/20100101 Firefox/38.0")
-	fmt.Print(ua)
-	// Output: Type: Browser
-	//Name: firefox
-	//Version: 38.0.0
-	//OS: gnu/linux
-	//Security: Unknown security
 }
