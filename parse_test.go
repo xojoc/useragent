@@ -16,8 +16,32 @@
 package useragent
 
 import (
+	"github.com/blang/semver"
 	"testing"
 )
+
+func eqUA(a *UserAgent, b *UserAgent) bool {
+	if a == nil || b == nil {
+		return false
+	}
+
+	if a.Type != b.Type ||
+		a.OS != b.OS ||
+		a.Name != b.Name ||
+		!a.Version.EQ(b.Version) ||
+		a.Security != b.Security {
+		return false
+	}
+	return true
+}
+
+func mustParse(s string) semver.Version {
+	v, err := semver.Parse(s)
+	if err != nil {
+		panic(`semver: Parse(` + s + `): ` + err.Error())
+	}
+	return v
+}
 
 func TestFirefoxLike(t *testing.T) {
 	var got *UserAgent
@@ -27,8 +51,9 @@ func TestFirefoxLike(t *testing.T) {
 	want.Type = TypeBrowser
 	want.OS = "gnu/linux"
 	want.Name = "firefox"
-	want.Version = Version{38, 0}
-	if *want != *got {
+	want.Version = mustParse("38.0.0")
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
 		t.Errorf("expected %+v, got %+v\n", want, got)
 	}
 
@@ -36,8 +61,9 @@ func TestFirefoxLike(t *testing.T) {
 	want.Type = TypeBrowser
 	want.OS = "gnu/linux"
 	want.Name = "iceweasel"
-	want.Version = Version{3, 5}
-	if *want != *got {
+	want.Version = mustParse("3.5.16")
+	want.Security = SecurityStrong
+	if !eqUA(want, got) {
 		t.Errorf("expected %+v, got %+v\n", want, got)
 	}
 
@@ -45,8 +71,64 @@ func TestFirefoxLike(t *testing.T) {
 	want.Type = TypeBrowser
 	want.OS = "windows"
 	want.Name = "firefox"
-	want.Version = Version{19, 0}
-	if *want != *got {
+	want.Version = mustParse("19.0.0")
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
 		t.Errorf("expected %+v, got %+v\n", want, got)
 	}
+}
+
+func TestChrome(t *testing.T) {
+	var got *UserAgent
+	want := &UserAgent{}
+
+	got = Parse(`Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36`)
+	want.Type = TypeBrowser
+	want.OS = "windows"
+	want.Name = "chrome"
+	want.Version = mustParse("41.0.2228")
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+	got = Parse(`Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.0 Safari/537.36`)
+	want.Type = TypeBrowser
+	want.OS = "gnu/linux"
+	want.Name = "chrome"
+	want.Version = mustParse("41.0.2227")
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+}
+
+func TestDillo(t *testing.T) {
+	var got *UserAgent
+	want := &UserAgent{}
+
+	got = Parse(`Dillo/0.8.6-i18n-misc`)
+	want.Type = TypeBrowser
+	want.OS = "unknown"
+	want.Name = "dillo"
+	want.Version = mustParse("0.8.6-i18n-misc")
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+}
+
+func TestGoogleBot(t *testing.T) {
+	var got *UserAgent
+	want := &UserAgent{}
+
+	got = Parse(`Googlebot/2.1 (+http://www.googlebot.com/bot.html)`)
+	want.Type = TypeCrawler
+	want.OS = "unknown"
+	want.Name = "googlebot"
+	want.Version = mustParse("2.1.0")
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
 }
