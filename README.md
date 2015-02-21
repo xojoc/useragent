@@ -6,7 +6,7 @@ Install the library with:
 ```
 go get github.com/xojoc/useragent       
 ```
-*useragent* is simple to use. Parse a string with [useragent.Parse](http://godoc.org/github.com/xojoc/useragent#Parse) and access the fields of [useragent.UserAgent](http://godoc.org/github.com/xojoc/useragent#UserAgent) for the required information:
+*useragent* is simple to use. First parse a string with [useragent.Parse](http://godoc.org/github.com/xojoc/useragent#Parse) and then access the fields of [useragent.UserAgent](http://godoc.org/github.com/xojoc/useragent#UserAgent) for the required information:
 ```
 package main
 
@@ -26,7 +26,7 @@ func main() {
 }
 
 ```
-see also [godoc](http://godoc.org/github.com/xojoc/useragent).
+see [godoc](http://godoc.org/github.com/xojoc/useragent) for the documentation.
 # How it works
 
 There is no standard for user agent strings, so *useragent* must use some heuristics. The site [http://www.useragentstring.com/](http://www.useragentstring.com/pages/useragentstring.php) has been invaluable during development. This parser so far recognizes:
