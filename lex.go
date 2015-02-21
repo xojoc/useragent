@@ -28,7 +28,6 @@ func newLex(s string) *lex {
 	return &lex{s, 0}
 }
 
-// FIXME: maybe return str with comp with matchRegexp
 func (l *lex) match(m string) bool {
 	if !strings.HasPrefix(l.s[l.p:], m) {
 		return false
@@ -45,5 +44,15 @@ func (l *lex) span(m string) (string, bool) {
 	}
 	s := l.s[l.p : l.p+i]
 	l.p += i + len(m)
+	return s, true
+}
+
+func (l *lex) spanAny(chars string) (string, bool) {
+	i := strings.IndexAny(l.s[l.p:], chars)
+	if i < 0 {
+		return "", false
+	}
+	s := l.s[l.p : l.p+i]
+	l.p += i + len(chars)
 	return s, true
 }

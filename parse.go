@@ -16,19 +16,29 @@
 package useragent
 
 import (
-	"strconv"
+	"github.com/blang/semver"
 	"strings"
 )
 
 type AgentType int
 
 const (
-	TypeBrowser AgentType = iota
+	TypeUnknown AgentType = iota
+	TypeBrowser
 	TypeCrawler
 	TypeLinkChecker
 	TypeValidator
 	TypeFeedReader
 	TypeLibrary
+)
+
+type Security int
+
+const (
+	SecurityUnknown Security = iota
+	SecurityNone
+	SecurityWeak
+	SecurityStrong
 )
 
 type Version struct {
@@ -37,17 +47,25 @@ type Version struct {
 }
 
 type UserAgent struct {
-	Type    AgentType
-	OS      string
-	Name    string
-	Version Version
+	Type     AgentType
+	OS       string
+	Name     string
+	Version  semver.Version
+	Security Security
+}
+
+func newUserAgent() *UserAgent {
+	ua := &UserAgent{}
+	ua.OS = "unknown"
+	ua.Name = "unknown"
+	return ua
 }
 
 type parseFn func(l *lex) *UserAgent
 
 func Parse(uas string) *UserAgent {
 	// we try each user agent parser in order until we get one that succeeds
-	for _, f := range []parseFn{parseFirefoxLike} {
+	for _, f := range []parseFn{parseFirefoxLike, parseChrome, parseDillo, parseGoogleBot} {
 		if ua := f(newLex(uas)); ua != nil {
 			return ua
 		}
@@ -55,77 +73,173 @@ func Parse(uas string) *UserAgent {
 	return nil
 }
 
-func parseFirefoxLike(l *lex) *UserAgent {
-	var err error
-	var s string
+func parseSecurity(l *lex) Security {
+	switch {
+	case l.match("U; "):
+		return SecurityStrong
+	case l.match("I; "):
+		return SecurityWeak
+	case l.match("N; "):
+		return SecurityNone
+	default:
+		return SecurityUnknown
+	}
+}
+
+func parseMozillaLike(l *lex, ua *UserAgent) bool {
 	var ok bool
-	ua := &UserAgent{}
+
 	ua.Type = TypeBrowser
 
 	if !l.match("Mozilla/5.0 (") {
-		return nil
-	}
-
-	s, ok = l.span(";")
-	if !ok {
-		return nil
+		return false
 	}
 
 	switch {
-	case s == "X11":
-		l.match(" ")
-		l.match("N; ")
-		l.match("U; ")
-		l.match("I; ")
+	case l.match("X11"):
+		l.match("; ")
+		ua.Security = parseSecurity(l)
 		switch {
 		case l.match("Linux") || l.match("Ubuntu"):
 			ua.OS = "gnu/linux"
 		case l.match("OpenBSD"):
 			ua.OS = "openbsd"
 		default:
-			return nil
+			return false
 		}
-	case strings.HasPrefix(s, "Windows"):
+	case l.match("Windows"):
+		l.match("; ")
+		ua.Security = parseSecurity(l)
 		ua.OS = "windows"
-	case s == "Macintosh":
+	case l.match("Macintosh"):
+		l.match("; ")
+		ua.Security = parseSecurity(l)
 		ua.OS = "mac os"
 	default:
-		return nil
+		return false
 	}
 
 	if _, ok = l.span(") "); !ok {
-		return nil
+		return false
 	}
 
-	// skip 'gecko/version ' field
-	if _, ok = l.span(" "); !ok {
-		return nil
-	}
+	return true
+}
+
+func parseNameVersion(l *lex, ua *UserAgent) bool {
+	var err error
+	var s string
+	var ok bool
 
 	s, ok = l.span("/")
 	if !ok {
-		return nil
+		return false
 	}
 	ua.Name = strings.ToLower(s)
 
-	if s, ok = l.span("."); !ok {
-		return nil
-	}
-	ua.Version.Major, err = strconv.ParseUint(s, 10, 64)
-	if err != nil {
-		return nil
-	}
-
-	if s, ok = l.span("."); !ok {
+	if s, ok = l.span(" "); !ok {
 		s = l.s[l.p:]
+		l.p = len(l.s)
 		if s == "" {
-			return nil
+			return false
 		}
 	}
-	ua.Version.Minor, err = strconv.ParseUint(s, 10, 64)
+
+	// kludge:
+	//  some versions have extra dot fields (instead of only 3)
+	//  we try to detect this and remove all the extra stuff
+	//   e.g. X.Y.Z.Q.W-beta -> X.Y.Z-beta
+	//  others miss the `patch` field in their version
+	//  so we add a fictious one
+	//   e.g. X.Y -> X.Y.0
+
+	hypen := strings.SplitN(s, "-", 2)
+	fs := strings.Split(hypen[0], ".")
+	maxfs := 3
+	if len(fs) < 3 {
+		if len(fs) == 2 {
+			fs = append(fs, "0")
+		} else {
+			maxfs = len(fs)
+		}
+	}
+	s = strings.Join(fs[:maxfs], ".")
+	if len(hypen) > 1 {
+		s += "-" + hypen[1]
+	}
+
+	ua.Version, err = semver.Parse(s)
 	if err != nil {
+		return false
+	}
+
+	return true
+}
+
+func parseFirefoxLike(l *lex) *UserAgent {
+	var ok bool
+	ua := newUserAgent()
+
+	if !parseMozillaLike(l, ua) {
+		return nil
+	}
+	if !l.match("Gecko") {
+		return nil
+	}
+	if _, ok = l.span(" "); !ok {
+		return nil
+	}
+	if !parseNameVersion(l, ua) {
 		return nil
 	}
 
 	return ua
+}
+
+func parseChrome(l *lex) *UserAgent {
+	var ok bool
+	ua := newUserAgent()
+
+	if !parseMozillaLike(l, ua) {
+		return nil
+	}
+	if !l.match("AppleWebKit") {
+		return nil
+	}
+	if _, ok = l.span(" "); !ok {
+		return nil
+	}
+	if l.match("(") {
+		l.span(") ")
+	}
+	if !parseNameVersion(l, ua) {
+		return nil
+	}
+
+	return ua
+}
+
+func parseDillo(l *lex) *UserAgent {
+	ua := newUserAgent()
+	ua.Type = TypeBrowser
+	if !parseNameVersion(l, ua) {
+		return nil
+	}
+	if ua.Name != "dillo" || l.s[l.p:] != "" {
+		return nil
+	}
+	return ua
+}
+
+func parseGoogleBot(l *lex) *UserAgent {
+	ua := newUserAgent()
+	ua.Type = TypeCrawler
+	if !parseNameVersion(l, ua) {
+		return nil
+	}
+	if ua.Name != "googlebot" {
+		return nil
+	}
+	return ua
+
 }
