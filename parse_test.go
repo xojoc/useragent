@@ -16,6 +16,7 @@
 package useragent
 
 import (
+	"fmt"
 	"github.com/blang/semver"
 	"testing"
 )
@@ -131,4 +132,9 @@ func TestGoogleBot(t *testing.T) {
 		t.Errorf("expected %+v, got %+v\n", want, got)
 	}
 
+}
+
+func ExampleParse() {
+	fmt.Print("hello")
+	// Output: hello
 }

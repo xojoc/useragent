@@ -13,10 +13,11 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-// Package useragent parses a user agent string
+// Package useragent parses a user agent string.
 package useragent
 
 import (
+	"fmt"
 	"github.com/blang/semver"
 	"strings"
 )
@@ -33,7 +34,28 @@ const (
 	TypeLibrary
 )
 
-// Some browsers may put security level information in their user agent.
+func (a AgentType) String() string {
+	switch a {
+	case TypeUnknown:
+		return "Unkonwn Agent type"
+	case TypeBrowser:
+		return "Browser"
+	case TypeCrawler:
+		return "Crawler"
+	case TypeLinkChecker:
+		return "Link Checker"
+	case TypeValidator:
+		return "Validator"
+	case TypeFeedReader:
+		return "Feed Reader"
+	case TypeLibrary:
+		return "Library"
+	default:
+		panic("")
+	}
+}
+
+// Some browsers may put security level information in their user agent string.
 type Security int
 
 const (
@@ -43,18 +65,41 @@ const (
 	SecurityStrong
 )
 
+func (s Security) String() string {
+	switch s {
+	case SecurityUnknown:
+		return "Unknown security"
+	case SecurityNone:
+		return "No security"
+	case SecurityWeak:
+		return "Weak security"
+	case SecurityStrong:
+		return "StrongSecurity"
+	default:
+		panic("cannot happen")
+	}
+}
+
 type UserAgent struct {
 	Type     AgentType
-	OS       string
 	Name     string
 	Version  semver.Version
+	OS       string
 	Security Security
+}
+
+func (ua *UserAgent) String() string {
+	return fmt.Sprintf(`Type: %v
+Name: %v
+Version: %v
+OS: %v
+Security: %v`, ua.Type, ua.Name, ua.Version, ua.OS, ua.Security)
 }
 
 func newUserAgent() *UserAgent {
 	ua := &UserAgent{}
-	ua.OS = "unknown"
 	ua.Name = "unknown"
+	ua.OS = "unknown"
 	return ua
 }
 
