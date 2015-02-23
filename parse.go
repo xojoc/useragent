@@ -22,33 +22,33 @@ import (
 	"strings"
 )
 
-type AgentType int
+type Type int
 
 const (
-	TypeUnknown AgentType = iota
-	TypeBrowser
-	TypeCrawler
-	TypeLinkChecker
-	TypeValidator
-	TypeFeedReader
-	TypeLibrary
+	Unknown Type = iota
+	Browser
+	Crawler
+	LinkChecker
+	Validator
+	FeedReader
+	Library
 )
 
-func (a AgentType) String() string {
+func (a Type) String() string {
 	switch a {
-	case TypeUnknown:
+	case Unknown:
 		return "Unkonwn Agent type"
-	case TypeBrowser:
+	case Browser:
 		return "Browser"
-	case TypeCrawler:
+	case Crawler:
 		return "Crawler"
-	case TypeLinkChecker:
+	case LinkChecker:
 		return "Link Checker"
-	case TypeValidator:
+	case Validator:
 		return "Validator"
-	case TypeFeedReader:
+	case FeedReader:
 		return "Feed Reader"
-	case TypeLibrary:
+	case Library:
 		return "Library"
 	default:
 		panic("")
@@ -83,7 +83,7 @@ func (s Security) String() string {
 type UserAgent struct {
 	// The original user agent string.
 	Original string
-	Type     AgentType
+	Type     Type
 	// The browser/crawler/etc. name in lowercase. For example:
 	//  firefox, iceweasel, icecat
 	//  dillo
@@ -149,7 +149,7 @@ func parseSecurity(l *lex) Security {
 func parseMozillaLike(l *lex, ua *UserAgent) bool {
 	var ok bool
 
-	ua.Type = TypeBrowser
+	ua.Type = Browser
 
 	if !l.match("mozilla/5.0 (") {
 		return false
@@ -288,7 +288,7 @@ func parseChrome(l *lex) *UserAgent {
 
 func parseDillo(l *lex) *UserAgent {
 	ua := new()
-	ua.Type = TypeBrowser
+	ua.Type = Browser
 	if !parseNameVersion(l, ua) {
 		return nil
 	}
@@ -300,7 +300,7 @@ func parseDillo(l *lex) *UserAgent {
 
 func parseIE(l *lex) *UserAgent {
 	ua := new()
-	ua.Type = TypeBrowser
+	ua.Type = Browser
 
 	if !l.match("mozilla") {
 		return nil
@@ -324,7 +324,7 @@ func parseIE(l *lex) *UserAgent {
 
 func parseGoogleBot(l *lex) *UserAgent {
 	ua := new()
-	ua.Type = TypeCrawler
+	ua.Type = Crawler
 	if !parseNameVersion(l, ua) {
 		return nil
 	}

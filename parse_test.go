@@ -79,7 +79,7 @@ func TestFirefoxLike(t *testing.T) {
 	want := &UserAgent{}
 
 	got = Parse(`Mozilla/5.0 (X11; Linux i686; rv:38.0) Gecko/20100101 Firefox/38.0`)
-	want.Type = TypeBrowser
+	want.Type = Browser
 	want.OS = "gnu/linux"
 	want.Name = "firefox"
 	want.Version = mustParse("38.0.0")
@@ -89,7 +89,7 @@ func TestFirefoxLike(t *testing.T) {
 	}
 
 	got = Parse(`Mozilla/5.0 (X11; U; Linux x86_64; sv-SE; rv:1.9.1.16) Gecko/20120714 Iceweasel/3.5.16 (like Firefox/3.5.16)`)
-	want.Type = TypeBrowser
+	want.Type = Browser
 	want.OS = "gnu/linux"
 	want.Name = "iceweasel"
 	want.Version = mustParse("3.5.16")
@@ -99,7 +99,7 @@ func TestFirefoxLike(t *testing.T) {
 	}
 
 	got = Parse(`Mozilla/5.0 (Windows x86; rv:19.0) Gecko/20100101 Firefox/19.0`)
-	want.Type = TypeBrowser
+	want.Type = Browser
 	want.OS = "windows"
 	want.Name = "firefox"
 	want.Version = mustParse("19.0.0")
@@ -114,7 +114,7 @@ func TestChrome(t *testing.T) {
 	want := &UserAgent{}
 
 	got = Parse(`Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36`)
-	want.Type = TypeBrowser
+	want.Type = Browser
 	want.OS = "windows"
 	want.Name = "chrome"
 	want.Version = mustParse("41.0.2228")
@@ -123,7 +123,7 @@ func TestChrome(t *testing.T) {
 		t.Errorf("expected %+v, got %+v\n", want, got)
 	}
 	got = Parse(`Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.0 Safari/537.36`)
-	want.Type = TypeBrowser
+	want.Type = Browser
 	want.OS = "gnu/linux"
 	want.Name = "chrome"
 	want.Version = mustParse("41.0.2227")
@@ -138,7 +138,7 @@ func TestDillo(t *testing.T) {
 	want := &UserAgent{}
 
 	got = Parse(`Dillo/0.8.6-i18n-misc`)
-	want.Type = TypeBrowser
+	want.Type = Browser
 	want.OS = "unknown"
 	want.Name = "dillo"
 	want.Version = mustParse("0.8.6-i18n-misc")
@@ -153,7 +153,7 @@ func TestIE(t *testing.T) {
 	want := &UserAgent{}
 
 	got = Parse(`Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)`)
-	want.Type = TypeBrowser
+	want.Type = Browser
 	want.OS = "windows"
 	want.Name = "ie"
 	want.Version = mustParse("10.0.0")
@@ -168,7 +168,7 @@ func TestGoogleBot(t *testing.T) {
 	want := &UserAgent{}
 
 	got = Parse(`Googlebot/2.1 (+http://www.googlebot.com/bot.html)`)
-	want.Type = TypeCrawler
+	want.Type = Crawler
 	want.OS = "unknown"
 	want.Name = "googlebot"
 	want.Version = mustParse("2.1.0")
@@ -176,5 +176,4 @@ func TestGoogleBot(t *testing.T) {
 	if !eqUA(want, got) {
 		t.Errorf("expected %+v, got %+v\n", want, got)
 	}
-
 }
