@@ -18,6 +18,7 @@ package useragent
 import (
 	"fmt"
 	"github.com/blang/semver"
+	"log"
 	"testing"
 )
 
@@ -33,6 +34,9 @@ func ExampleParse() {
 
 func ExampleParse_access() {
 	ua := Parse("Mozilla/5.0 (X11; Linux i686; rv:38.0) Gecko/20100101 Firefox/38.0")
+	if ua == nil {
+		log.Fatal("cannot parse user agent string")
+	}
 	fmt.Println(ua.Type)
 	fmt.Println(ua.Name)
 	fmt.Println(ua.Version)
