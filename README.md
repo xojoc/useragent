@@ -6,26 +6,9 @@ First install the library with:
 ```
 go get github.com/xojoc/useragent       
 ```
-*useragent* is simple to use. First parse a string with [useragent.Parse](http://godoc.org/github.com/xojoc/useragent#Parse) and then access the fields of [useragent.UserAgent](http://godoc.org/github.com/xojoc/useragent#UserAgent) for the required information:
-```
-package main
+*useragent* is simple to use. First parse a string with [useragent.Parse](http://godoc.org/github.com/xojoc/useragent#Parse) and then access the fields of [useragent.UserAgent](http://godoc.org/github.com/xojoc/useragent#UserAgent) for the required information. Example:
+ * [Access fields](http://godoc.org/github.com/xojoc/useragent#example-Parse--Access)
 
-import (
-	"github.com/xojoc/useragent"
-	"log"
-)
-
-func main() {
-	ua := useragent.Parse("Mozilla/5.0 (X11; Linux i686; rv:38.0) Gecko/20100101 Firefox/38.0")
-	if ua == nil {
-		log.Fatal("cannot parse user agent string")
-	}
-	log.Println(ua.OS)
-	log.Println(ua.Name)
-	log.Println(ua.Version)
-}
-
-```
 see [godoc](http://godoc.org/github.com/xojoc/useragent) for the complete documentation.
 # How it works
 

@@ -81,7 +81,7 @@ func (s Security) String() string {
 }
 
 type UserAgent struct {
-	// The original user agent string
+	// The original user agent string.
 	Original string
 	Type     AgentType
 	// The browser/crawler/etc. name in lowercase. For example:
