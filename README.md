@@ -2,7 +2,7 @@
 *useragent* is a library written in [golang](http://golang.org) to parse [user agent strings](http://useragentstring.com/).
 
 # Usage
-Install the library with:
+First install the library with:
 ```
 go get github.com/xojoc/useragent       
 ```
@@ -26,7 +26,7 @@ func main() {
 }
 
 ```
-see [godoc](http://godoc.org/github.com/xojoc/useragent) for the documentation.
+see [godoc](http://godoc.org/github.com/xojoc/useragent) for the complete documentation.
 # How it works
 
 There is no standard for user agent strings, so *useragent* must use some heuristics. The site [http://www.useragentstring.com/](http://www.useragentstring.com/pages/useragentstring.php) has been invaluable during development. This parser so far recognizes:

@@ -31,6 +31,22 @@ func ExampleParse() {
 	//Security: Unknown security
 }
 
+func ExampleParse_access() {
+	ua := Parse("Mozilla/5.0 (X11; Linux i686; rv:38.0) Gecko/20100101 Firefox/38.0")
+	fmt.Println(ua.Type)
+	fmt.Println(ua.Name)
+	fmt.Println(ua.Version)
+	fmt.Println(ua.OS)
+	if ua.Security != SecurityUnknown {
+		fmt.Println(ua.Security)
+	}
+
+	//Output:Browser
+	//firefox
+	//38.0.0
+	//gnu/linux
+}
+
 func eqUA(a *UserAgent, b *UserAgent) bool {
 	if a == nil || b == nil {
 		return false

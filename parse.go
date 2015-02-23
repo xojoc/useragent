@@ -74,14 +74,16 @@ func (s Security) String() string {
 	case SecurityWeak:
 		return "Weak security"
 	case SecurityStrong:
-		return "StrongSecurity"
+		return "Strong Security"
 	default:
 		panic("cannot happen")
 	}
 }
 
 type UserAgent struct {
-	Type AgentType
+	// The original user agent string
+	Original string
+	Type     AgentType
 	// The browser/crawler/etc. name in lowercase. For example:
 	//  firefox, iceweasel, icecat
 	//  dillo
@@ -109,7 +111,7 @@ OS: %v
 Security: %v`, ua.Type, ua.Name, ua.Version, ua.OS, ua.Security)
 }
 
-func newUserAgent() *UserAgent {
+func new() *UserAgent {
 	ua := &UserAgent{}
 	ua.Name = "unknown"
 	ua.OS = "unknown"
@@ -124,6 +126,7 @@ func Parse(uas string) *UserAgent {
 	// we try each user agent parser in order until we get one that succeeds
 	for _, f := range []parseFn{parseFirefoxLike, parseChrome, parseDillo, parseIE, parseGoogleBot} {
 		if ua := f(newLex(strings.ToLower(uas))); ua != nil {
+			ua.Original = uas
 			return ua
 		}
 	}
@@ -155,8 +158,7 @@ func parseMozillaLike(l *lex, ua *UserAgent) bool {
 	l.match("compatible; ")
 
 	switch {
-	case l.match("x11"):
-		l.match("; ")
+	case l.match("x11; "):
 		ua.Security = parseSecurity(l)
 		switch {
 		case l.match("linux") || l.match("ubuntu"):
@@ -167,11 +169,10 @@ func parseMozillaLike(l *lex, ua *UserAgent) bool {
 			return false
 		}
 	case l.match("windows"):
-		l.match("; ")
+		l.span("; ")
 		ua.Security = parseSecurity(l)
 		ua.OS = "windows"
-	case l.match("macintosh"):
-		l.match("; ")
+	case l.match("macintosh; "):
 		ua.Security = parseSecurity(l)
 		ua.OS = "macosx"
 	default:
@@ -244,7 +245,7 @@ func parseNameVersion(l *lex, ua *UserAgent) bool {
 
 func parseFirefoxLike(l *lex) *UserAgent {
 	var ok bool
-	ua := newUserAgent()
+	ua := new()
 
 	if !parseMozillaLike(l, ua) {
 		return nil
@@ -264,7 +265,7 @@ func parseFirefoxLike(l *lex) *UserAgent {
 
 func parseChrome(l *lex) *UserAgent {
 	var ok bool
-	ua := newUserAgent()
+	ua := new()
 
 	if !parseMozillaLike(l, ua) {
 		return nil
@@ -286,7 +287,7 @@ func parseChrome(l *lex) *UserAgent {
 }
 
 func parseDillo(l *lex) *UserAgent {
-	ua := newUserAgent()
+	ua := new()
 	ua.Type = TypeBrowser
 	if !parseNameVersion(l, ua) {
 		return nil
@@ -298,11 +299,15 @@ func parseDillo(l *lex) *UserAgent {
 }
 
 func parseIE(l *lex) *UserAgent {
-	ua := newUserAgent()
+	ua := new()
 	ua.Type = TypeBrowser
 
-	l.match("mozilla")
-	l.span(" (")
+	if !l.match("mozilla") {
+		return nil
+	}
+	if _, ok := l.span(" ("); !ok {
+		return nil
+	}
 	l.match("compatible; ")
 	if !l.match("msie ") {
 		return nil
@@ -318,7 +323,7 @@ func parseIE(l *lex) *UserAgent {
 }
 
 func parseGoogleBot(l *lex) *UserAgent {
-	ua := newUserAgent()
+	ua := new()
 	ua.Type = TypeCrawler
 	if !parseNameVersion(l, ua) {
 		return nil
