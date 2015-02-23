@@ -21,10 +21,8 @@ There is no standard for user agent strings, so *useragent* must use some heuris
 **More is coming...**
 If you need support for a particular user agent just open an issue :).
 
-*useragent* uses [blang/semver](https://github.com/blang/semver) for version parsing/handling.
-
 # Who?
-*useragent* was written by Alexandru Cojocaru ([http://xojoc.pw](http://xojoc.pw)), [blang/semver](https://github.com/blang/semver) is used to parse versions.
+*useragent* was written by Alexandru Cojocaru (http://xojoc.pw), [blang/semver](https://github.com/blang/semver) is used to parse versions.
 
 # License
-*useragent* is released under the GPLv3 or later, see [COPYING](COPYING)
+*useragent* is released under the GPLv3 or later, see [COPYING](COPYING).
