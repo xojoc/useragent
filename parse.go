@@ -19,6 +19,7 @@ package useragent
 import (
 	"fmt"
 	"github.com/blang/semver"
+	"net/url"
 	"strings"
 )
 
@@ -84,23 +85,37 @@ type UserAgent struct {
 	// The original user agent string.
 	Original string
 	Type     Type
-	// The browser/crawler/etc. name in lowercase. For example:
-	//  firefox, iceweasel, icecat
-	//  dillo
-	//  chrome
-	//  ie
-	//  googlebot
+	// The browser/crawler/etc. name. For example:
+	//  Firefox, IceCat, Iceweasel
+	//  Dillo
+	//  Chrome
+	//  MSIE
+	//  Googlebot
 	// If the name is not known, Name will be `unknown'.
 	Name    string
 	Version semver.Version
-	// The OS name in lowercase. Can be one of:
-	//  gnu/linux
-	//  openbsd
-	//  windows
-	//  macosx
+	// The OS name. Can be one of:
+	//  GNU/Linux
+	//  FreeBSD
+	//  OpenBSD
+	//  NetBSD
+	//  Windows
+	//  Mac OS X
+	//  Android
+	//  Firefox OS
+	//  CrOS
+	//   etc.
 	//  unknown
+	// If the os is not known, OS will be `unknown'.
 	OS       string
 	Security Security
+	// URL with more information about the user agent (in most cases it's the home page).
+	// If unknown is nil.
+	URL *url.URL
+	// Is it a phone device?
+	Mobile bool
+	// Is it a tablet device?
+	Tablet bool
 }
 
 func (ua *UserAgent) String() string {
@@ -108,7 +123,9 @@ func (ua *UserAgent) String() string {
 Name: %v
 Version: %v
 OS: %v
-Security: %v`, ua.Type, ua.Name, ua.Version, ua.OS, ua.Security)
+Security: %v
+Mobile: %v
+Tablet: %v`, ua.Type, ua.Name, ua.Version, ua.OS, ua.Security, ua.Mobile, ua.Tablet)
 }
 
 func new() *UserAgent {
@@ -118,72 +135,26 @@ func new() *UserAgent {
 	return ua
 }
 
+func u(rawurl string) *url.URL {
+	url, err := url.Parse(rawurl)
+	if err != nil {
+		panic("useragent: Parse(" + rawurl + "): " + err.Error())
+	}
+	return url
+}
+
 type parseFn func(l *lex) *UserAgent
 
 // Try to extract information about an user agent from uas.
 // Since user agent strings don't have a standard, this function uses heuristics.
 func Parse(uas string) *UserAgent {
-	// we try each user agent parser in order until we get one that succeeds
-	for _, f := range []parseFn{parseFirefoxLike, parseChrome, parseDillo, parseIE, parseGoogleBot} {
-		if ua := f(newLex(strings.ToLower(uas))); ua != nil {
+	for _, f := range []parseFn{parseBrowser, parseGeneric} {
+		if ua := f(newLex(uas)); ua != nil {
 			ua.Original = uas
 			return ua
 		}
 	}
 	return nil
-}
-
-func parseSecurity(l *lex) Security {
-	switch {
-	case l.match("u; "):
-		return SecurityStrong
-	case l.match("i; "):
-		return SecurityWeak
-	case l.match("n; "):
-		return SecurityNone
-	default:
-		return SecurityUnknown
-	}
-}
-
-func parseMozillaLike(l *lex, ua *UserAgent) bool {
-	var ok bool
-
-	ua.Type = Browser
-
-	if !l.match("mozilla/5.0 (") {
-		return false
-	}
-
-	l.match("compatible; ")
-
-	switch {
-	case l.match("x11; "):
-		ua.Security = parseSecurity(l)
-		switch {
-		case l.match("linux") || l.match("ubuntu"):
-			ua.OS = "gnu/linux"
-		case l.match("openbsd"):
-			ua.OS = "openbsd"
-		default:
-			return false
-		}
-	case l.match("windows"):
-		l.span("; ")
-		ua.Security = parseSecurity(l)
-		ua.OS = "windows"
-	case l.match("macintosh; "):
-		ua.Security = parseSecurity(l)
-		ua.OS = "macosx"
-	default:
-		return false
-	}
-
-	if _, ok = l.span(") "); !ok {
-		return false
-	}
-
-	return true
 }
 
 func parseVersion(l *lex, ua *UserAgent, sep string) bool {
@@ -238,99 +209,27 @@ func parseNameVersion(l *lex, ua *UserAgent) bool {
 	if !ok {
 		return false
 	}
-	ua.Name = strings.ToLower(s)
+	ua.Name = s
 
 	return parseVersion(l, ua, " ")
 }
 
-func parseFirefoxLike(l *lex) *UserAgent {
-	var ok bool
+func parseGeneric(l *lex) *UserAgent {
 	ua := new()
-
-	if !parseMozillaLike(l, ua) {
-		return nil
-	}
-	if !l.match("gecko") {
-		return nil
-	}
-	if _, ok = l.span(" "); !ok {
-		return nil
-	}
 	if !parseNameVersion(l, ua) {
 		return nil
 	}
-
-	return ua
-}
-
-func parseChrome(l *lex) *UserAgent {
-	var ok bool
-	ua := new()
-
-	if !parseMozillaLike(l, ua) {
-		return nil
-	}
-	if !l.match("applewebkit") {
-		return nil
-	}
-	if _, ok = l.span(" "); !ok {
-		return nil
-	}
-	if l.match("(") {
-		l.span(") ")
-	}
-	if !parseNameVersion(l, ua) {
-		return nil
+	if url, ok := browsers[ua.Name]; ok {
+		ua.Type = Browser
+		ua.URL = url
+		return ua
 	}
 
-	return ua
-}
-
-func parseDillo(l *lex) *UserAgent {
-	ua := new()
-	ua.Type = Browser
-	if !parseNameVersion(l, ua) {
-		return nil
-	}
-	if ua.Name != "dillo" || l.s[l.p:] != "" {
-		return nil
-	}
-	return ua
-}
-
-func parseIE(l *lex) *UserAgent {
-	ua := new()
-	ua.Type = Browser
-
-	if !l.match("mozilla") {
-		return nil
-	}
-	if _, ok := l.span(" ("); !ok {
-		return nil
-	}
-	l.match("compatible; ")
-	if !l.match("msie ") {
-		return nil
-	}
-	ua.Name = "ie"
-	ua.OS = "windows"
-
-	if !parseVersion(l, ua, ";") {
-		return nil
+	if url, ok := crawlers[ua.Name]; ok {
+		ua.Type = Crawler
+		ua.URL = url
+		return ua
 	}
 
-	return ua
-}
-
-func parseGoogleBot(l *lex) *UserAgent {
-	ua := new()
-	ua.Type = Crawler
-	if !parseNameVersion(l, ua) {
-		return nil
-	}
-	if ua.Name != "googlebot" {
-		return nil
-	}
-	return ua
-
+	return nil
 }

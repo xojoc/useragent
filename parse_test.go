@@ -26,10 +26,12 @@ func ExampleParse() {
 	ua := Parse("Mozilla/5.0 (X11; Linux i686; rv:38.0) Gecko/20100101 Firefox/38.0")
 	fmt.Print(ua)
 	// Output: Type: Browser
-	//Name: firefox
+	//Name: Firefox
 	//Version: 38.0.0
-	//OS: gnu/linux
+	//OS: GNU/Linux
 	//Security: Unknown security
+	//Mobile: false
+	//Tablet: false
 }
 
 func ExampleParse_access() {
@@ -46,9 +48,9 @@ func ExampleParse_access() {
 	}
 
 	//Output:Browser
-	//firefox
+	//Firefox
 	//38.0.0
-	//gnu/linux
+	//GNU/Linux
 }
 
 func eqUA(a *UserAgent, b *UserAgent) bool {
@@ -60,7 +62,9 @@ func eqUA(a *UserAgent, b *UserAgent) bool {
 		a.OS != b.OS ||
 		a.Name != b.Name ||
 		!a.Version.EQ(b.Version) ||
-		a.Security != b.Security {
+		a.Security != b.Security ||
+		a.Mobile != b.Mobile ||
+		a.Tablet != b.Tablet {
 		return false
 	}
 	return true
@@ -74,24 +78,24 @@ func mustParse(s string) semver.Version {
 	return v
 }
 
-func TestFirefoxLike(t *testing.T) {
+func TestGecko(t *testing.T) {
 	var got *UserAgent
 	want := &UserAgent{}
 
-	got = Parse(`Mozilla/5.0 (X11; Linux i686; rv:38.0) Gecko/20100101 Firefox/38.0`)
+	got = Parse(`Mozilla/5.0 (X11; U; Linux i686; rv:38.0) Gecko/20100101 Firefox/38.0`)
 	want.Type = Browser
-	want.OS = "gnu/linux"
-	want.Name = "firefox"
+	want.OS = "GNU/Linux"
+	want.Name = "Firefox"
 	want.Version = mustParse("38.0.0")
-	want.Security = SecurityUnknown
+	want.Security = SecurityStrong
 	if !eqUA(want, got) {
 		t.Errorf("expected %+v, got %+v\n", want, got)
 	}
 
-	got = Parse(`Mozilla/5.0 (X11; U; Linux x86_64; sv-SE; rv:1.9.1.16) Gecko/20120714 Iceweasel/3.5.16 (like Firefox/3.5.16)`)
+	got = Parse(`Mozilla/5.0 (X11; U; Linux x86_64; sv-SE; rv:1.9.1.16) Gecko/20120714 IceCat/3.5.16 (like Firefox/3.5.16)`)
 	want.Type = Browser
-	want.OS = "gnu/linux"
-	want.Name = "iceweasel"
+	want.OS = "GNU/Linux"
+	want.Name = "IceCat"
 	want.Version = mustParse("3.5.16")
 	want.Security = SecurityStrong
 	if !eqUA(want, got) {
@@ -100,12 +104,23 @@ func TestFirefoxLike(t *testing.T) {
 
 	got = Parse(`Mozilla/5.0 (Windows x86; rv:19.0) Gecko/20100101 Firefox/19.0`)
 	want.Type = Browser
-	want.OS = "windows"
-	want.Name = "firefox"
+	want.OS = "Windows"
+	want.Name = "Firefox"
 	want.Version = mustParse("19.0.0")
 	want.Security = SecurityUnknown
 	if !eqUA(want, got) {
-		t.Errorf("expected %+v, got %+v\n", want, got)
+		t.Errorf("expected:\n%+v\ngot:\n%+v\n", want, got)
+	}
+
+	got = Parse(`Mozilla/5.0 (Mobile; rv:26.0) Gecko/26.0 Firefox/26.0`)
+	want.Type = Browser
+	want.OS = "Firefox OS"
+	want.Name = "Firefox"
+	want.Version = mustParse("26.0.0")
+	want.Security = SecurityUnknown
+	want.Mobile = true
+	if !eqUA(want, got) {
+		t.Errorf("expected:\n%+v\ngot:\n%+v\n", want, got)
 	}
 }
 
@@ -113,36 +128,71 @@ func TestChrome(t *testing.T) {
 	var got *UserAgent
 	want := &UserAgent{}
 
-	got = Parse(`Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36`)
-	want.Type = Browser
-	want.OS = "windows"
-	want.Name = "chrome"
-	want.Version = mustParse("41.0.2228")
-	want.Security = SecurityUnknown
-	if !eqUA(want, got) {
-		t.Errorf("expected %+v, got %+v\n", want, got)
-	}
 	got = Parse(`Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.0 Safari/537.36`)
 	want.Type = Browser
-	want.OS = "gnu/linux"
-	want.Name = "chrome"
+	want.OS = "GNU/Linux"
+	want.Name = "Chrome"
 	want.Version = mustParse("41.0.2227")
 	want.Security = SecurityUnknown
 	if !eqUA(want, got) {
 		t.Errorf("expected %+v, got %+v\n", want, got)
 	}
+
+	got = Parse(`Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36`)
+	want.Type = Browser
+	want.OS = "Windows"
+	want.Name = "Chrome"
+	want.Version = mustParse("41.0.2228")
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`Mozilla/5.0 (Linux; Android 4.0.4; Galaxy Nexus Build/IMM76B) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.133 Mobile Safari/535.19`)
+	want.Type = Browser
+	want.OS = "Android"
+	want.Name = "Chrome"
+	want.Version = mustParse("18.0.1025")
+	want.Security = SecurityUnknown
+	want.Mobile = true
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`Mozilla/5.0 (iPhone; U; CPU iPhone OS 5_1_1 like Mac OS X; en) AppleWebKit/534.46.0 (KHTML, like Gecko) CriOS/19.0.1084.60 Mobile/9B206 Safari/7534.48.3`)
+	want.Type = Browser
+	want.OS = "iOS"
+	want.Name = "Chrome"
+	want.Version = mustParse("19.0.1084")
+	want.Security = SecurityStrong
+	want.Mobile = true
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
 }
 
-func TestDillo(t *testing.T) {
+func TestSafari(t *testing.T) {
 	var got *UserAgent
 	want := &UserAgent{}
 
-	got = Parse(`Dillo/0.8.6-i18n-misc`)
+	got = Parse(`Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) AppleWebKit/537.13+ (KHTML, like Gecko) Version/5.1.7 Safari/534.57.2`)
 	want.Type = Browser
-	want.OS = "unknown"
-	want.Name = "dillo"
-	want.Version = mustParse("0.8.6-i18n-misc")
+	want.OS = "Mac OS X"
+	want.Name = "Safari"
+	want.Version = mustParse("5.1.7")
 	want.Security = SecurityUnknown
+	want.Mobile = false
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`Mozilla/5.0 (iPad; U; CPU OS 3_2 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Version/4.0.4 Mobile/7B334b Safari/531.21.10`)
+	want.Type = Browser
+	want.OS = "iOS"
+	want.Name = "Safari"
+	want.Version = mustParse("4.0.4")
+	want.Security = SecurityStrong
+	want.Mobile = true
 	if !eqUA(want, got) {
 		t.Errorf("expected %+v, got %+v\n", want, got)
 	}
@@ -154,23 +204,44 @@ func TestIE(t *testing.T) {
 
 	got = Parse(`Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)`)
 	want.Type = Browser
-	want.OS = "windows"
-	want.Name = "ie"
+	want.OS = "Windows"
+	want.Name = "MSIE"
 	want.Version = mustParse("10.0.0")
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`Mozilla/5.0 (Windows NT 6.3; Trident/7.0; .NET4.0E; .NET4.0C; rv:11.0) like Gecko`)
+	want.Type = Browser
+	want.OS = "Windows"
+	want.Name = "MSIE"
+	want.Version = mustParse("11.0.0")
 	want.Security = SecurityUnknown
 	if !eqUA(want, got) {
 		t.Errorf("expected %+v, got %+v\n", want, got)
 	}
 }
 
-func TestGoogleBot(t *testing.T) {
+func TestGeneric(t *testing.T) {
 	var got *UserAgent
 	want := &UserAgent{}
 
-	got = Parse(`Googlebot/2.1 (+http://www.googlebot.com/bot.html)`)
+	got = Parse(`Dillo/0.8.6-i18n-misc`)
+	want.Type = Browser
+	want.OS = "unknown"
+	want.Name = "Dillo"
+	want.Version = mustParse("0.8.6-i18n-misc")
+	want.Security = SecurityUnknown
+	//	want.URL = u("http://www.dillo.org/")
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`Googlebot/2.1 (+http://www.google.com/bot.html)`)
 	want.Type = Crawler
 	want.OS = "unknown"
-	want.Name = "googlebot"
+	want.Name = "Googlebot"
 	want.Version = mustParse("2.1.0")
 	want.Security = SecurityUnknown
 	if !eqUA(want, got) {
