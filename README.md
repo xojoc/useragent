@@ -10,8 +10,8 @@ go get github.com/xojoc/useragent
  * [Access fields](http://godoc.org/github.com/xojoc/useragent#example-Parse--Access)
 
 see [godoc](http://godoc.org/github.com/xojoc/useragent) for the complete documentation.
-# How?
-          Lasciate ogne speranza, voi ch'intrate.
+# How it works?
+          Lasciate ogne speranza, voi ch'intrate. -Dante
 Parsing user agent strings is a hell. There is no standard for user agent strings, so *useragent* must use some heuristics. The site [http://www.useragentstring.com/](http://www.useragentstring.com/pages/useragentstring.php) has been invaluable during development. Some relevant links are also:
 
   * https://developer.mozilla.org/en-US/docs/Web/HTTP/Gecko_user_agent_string_reference
@@ -23,16 +23,16 @@ for the supported user agents see:
   * browsers: [browser.go](browser.go)
   * crawlers: [crawler.go](crawler.go)
 
-If you need support for a particular user agent just open an issue :).
+If you think *useragent* doesn't parse correctly a particular user agent string, just open an issue :).
 
-# Why?
+# Why this library?
 *useragent* doesn't just split the user agent string and look for specific strings like other parsers, but it has specific parser for the most common browsers/crawlers and falls back to a generic parser for everything else. Its main features are:
 
  * Simple and stable API.
  * High precision in detection of the most common browsers/crawlers.
  * Detects mobile/tablet devices.
  * OS detection.
- * URL with more information about the user agent (usually its home page).
+ * URL with more information about the user agent (usually its the home page).
  * [Security](http://godoc.org/github.com/xojoc/useragent#Security) level detection when reported by browsers.
 
 
