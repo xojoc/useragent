@@ -10,19 +10,34 @@ go get github.com/xojoc/useragent
  * [Access fields](http://godoc.org/github.com/xojoc/useragent#example-Parse--Access)
 
 see [godoc](http://godoc.org/github.com/xojoc/useragent) for the complete documentation.
-# How it works
+# How?
+          Lasciate ogne speranza, voi ch'intrate.
+Parsing user agent strings is a hell. There is no standard for user agent strings, so *useragent* must use some heuristics. The site [http://www.useragentstring.com/](http://www.useragentstring.com/pages/useragentstring.php) has been invaluable during development. Some relevant links are also:
 
-There is no standard for user agent strings, so *useragent* must use some heuristics. The site [http://www.useragentstring.com/](http://www.useragentstring.com/pages/useragentstring.php) has been invaluable during development. This parser so far recognizes:
- * Firefox and derivatives (IceCat, IceWeasel, etc.)
- * Dillo
- * Chrome
- * GoogleBot
+  * https://developer.mozilla.org/en-US/docs/Web/HTTP/Gecko_user_agent_string_reference
+  * https://developer.chrome.com/multidevice/user-agent
+  * https://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariWebContent/OptimizingforSafarioniPhone/OptimizingforSafarioniPhone.html#//apple_ref/doc/uid/TP40006517-SW3
+  * http://blogs.msdn.com/b/ieinternals/archive/2013/09/21/internet-explorer-11-user-agent-string-ua-string-sniffing-compatibility-with-gecko-webkit.aspx
 
-**More is coming...**
+for the supported user agents see:
+  * browsers: [browser.go](browser.go)
+  * crawlers: [crawler.go](crawler.go)
+
 If you need support for a particular user agent just open an issue :).
 
+# Why?
+*useragent* doesn't just split the user agent string and look for specific strings like other parsers, but it has specific parser for the most common browsers/crawlers and falls back to a generic parser for everything else. Its main features are:
+
+ * Simple and stable API.
+ * High precision in detection of the most common browsers/crawlers.
+ * Detects mobile/tablet devices.
+ * OS detection.
+ * URL with more information about the user agent (usually its home page).
+ * [Security](http://godoc.org/github.com/xojoc/useragent#Security) level detection when reported by browsers.
+
+
 # Who?
-*useragent* was written by Alexandru Cojocaru (http://xojoc.pw), [blang/semver](https://github.com/blang/semver) is used to parse versions.
+*useragent* was written by Alexandru Cojocaru (http://xojoc.pw) and uses [blang/semver](https://github.com/blang/semver) to parse versions.
 
 # License
 *useragent* is released under the GPLv3 or later, see [COPYING](COPYING).

@@ -91,6 +91,7 @@ type UserAgent struct {
 	//  Chrome
 	//  MSIE
 	//  Googlebot
+	//   etc.
 	// If the name is not known, Name will be `unknown'.
 	Name    string
 	Version semver.Version
@@ -105,7 +106,6 @@ type UserAgent struct {
 	//  Firefox OS
 	//  CrOS
 	//   etc.
-	//  unknown
 	// If the os is not known, OS will be `unknown'.
 	OS       string
 	Security Security
