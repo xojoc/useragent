@@ -4,12 +4,12 @@
 # Usage
 First install the library with:
 ```
-go get github.com/xojoc/useragent       
+go get xojoc.pw/useragent
 ```
-*useragent* is simple to use. First parse a string with [useragent.Parse](http://godoc.org/github.com/xojoc/useragent#Parse) and then access the fields of [useragent.UserAgent](http://godoc.org/github.com/xojoc/useragent#UserAgent) for the required information. Example:
- * [Access fields](http://godoc.org/github.com/xojoc/useragent#example-Parse--Access)
+*useragent* is simple to use. First parse a string with [useragent.Parse](http://godoc.org/xojoc.pw/useragent#Parse) and then access the fields of [useragent.UserAgent](http://godoc.org/xojoc.pw/useragent#UserAgent) for the required information. Example:
+ * [Access fields](http://godoc.org/xojoc.pw/useragent#example-Parse--Access)
 
-see [godoc](http://godoc.org/github.com/xojoc/useragent) for the complete documentation.
+see [godoc](http://godoc.org/xojoc.pw/useragent) for the complete documentation.
 # How it works?
           Lasciate ogne speranza, voi ch'intrate. -Dante
 Parsing user agent strings is a hell. There is no standard for user agent strings, so *useragent* must use some heuristics. The site [http://www.useragentstring.com/](http://www.useragentstring.com/pages/useragentstring.php) has been invaluable during development. Some relevant links are also:
@@ -33,7 +33,7 @@ If you think *useragent* doesn't parse correctly a particular user agent string,
  * Detects mobile/tablet devices.
  * OS detection.
  * URL with more information about the user agent (usually its the home page).
- * [Security](http://godoc.org/github.com/xojoc/useragent#Security) level detection when reported by browsers.
+ * [Security](http://godoc.org/xojoc.pw/useragent#Security) level detection when reported by browsers.
 
 
 # Who?

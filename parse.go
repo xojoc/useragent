@@ -14,7 +14,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 // Package useragent parses a user agent string.
-package useragent
+package useragent // import "xojoc.pw/useragent"
 
 import (
 	"fmt"
