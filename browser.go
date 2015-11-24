@@ -108,7 +108,11 @@ func parseMozillaLike(l *lex, ua *UserAgent) bool {
 		ua.Security = parseSecurity(l)
 		ua.OS = "Firefox OS"
 		ua.Tablet = true
-	case l.match("iPhone; ") || l.match("iPod; ") || l.match("iPad; "):
+	case l.match("iPad; "):
+		ua.Security = parseSecurity(l)
+		ua.OS = "iOS"
+		ua.Tablet = true
+	case l.match("iPhone; ") || l.match("iPod; "):
 		ua.Security = parseSecurity(l)
 		ua.OS = "iOS"
 		ua.Mobile = true

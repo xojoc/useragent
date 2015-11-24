@@ -212,13 +212,25 @@ func TestSafari(t *testing.T) {
 		t.Errorf("expected %+v, got %+v\n", want, got)
 	}
 
+	got = Parse(`Mozilla/5.0 (iPhone; CPU iPhone OS 6_1_4 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10B350 Safari/8536.25`)
+	want.Type = Browser
+	want.OS = "iOS"
+	want.Name = "Safari"
+	want.Version = mustParse("6.0.0")
+	want.Security = SecurityUnknown
+	want.Mobile = true
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
 	got = Parse(`Mozilla/5.0 (iPad; U; CPU OS 3_2 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Version/4.0.4 Mobile/7B334b Safari/531.21.10`)
 	want.Type = Browser
 	want.OS = "iOS"
 	want.Name = "Safari"
 	want.Version = mustParse("4.0.4")
 	want.Security = SecurityStrong
-	want.Mobile = true
+	want.Mobile = false
+	want.Tablet = true
 	if !eqUA(want, got) {
 		t.Errorf("expected %+v, got %+v\n", want, got)
 	}
