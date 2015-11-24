@@ -27,6 +27,7 @@ var browsers = map[string]*url.URL{
 	"IceCat":    u("https://www.gnu.org/software/gnuzilla/"),
 	"Iceweasel": u("https://wiki.debian.org/Iceweasel"),
 	"NetSurf":   u("http://www.netsurf-browser.org/"),
+	"Silk":      u("http://aws.amazon.com/documentation/silk/"),
 }
 
 func parseBrowser(l *lex) *UserAgent {
@@ -172,6 +173,14 @@ func parseChromeSafari(l *lex) *UserAgent {
 			return nil
 		}
 		ua.Name = "Safari"
+	} else if ua.Name == "Silk" {
+		if l.match("like Chrome/") {
+			if _, ok := l.span(" "); !ok {
+				return nil
+			}
+		} else {
+			return nil
+		}
 	}
 	if ua.OS == "Android" {
 		if l.match("Mobile") {

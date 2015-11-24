@@ -122,6 +122,32 @@ func TestGecko(t *testing.T) {
 	if !eqUA(want, got) {
 		t.Errorf("expected:\n%+v\ngot:\n%+v\n", want, got)
 	}
+
+	// Silk on Kindle Fire: Tablet mode
+	got = Parse(`Mozilla/5.0 (Linux; Android 4.4.3; KFTHWI Build/KTU84M) AppleWebKit/537.36 (KHTML, like Gecko) Silk/44.1.54 like Chrome/44.0.2403.63 Safari/537.36`)
+	want.Type = Browser
+	want.OS = "Android"
+	want.Name = "Silk"
+	want.Version = mustParse("44.1.54")
+	want.Security = SecurityUnknown
+	want.Mobile = false
+	want.Tablet = true
+	if !eqUA(want, got) {
+		t.Errorf("expected:\n%+v\ngot:\n%+v\n", want, got)
+	}
+
+	// Silk on Kindle Fire: Mobile mode
+	got = Parse(`Mozilla/5.0 (Linux; U; Android 4.4.3; KFTHWI Build/KTU84M) AppleWebKit/537.36 (KHTML, like Gecko) Silk/44.1.54 like Chrome/44.0.2403.63 Mobile Safari/537.36`)
+	want.Type = Browser
+	want.OS = "Android"
+	want.Name = "Silk"
+	want.Version = mustParse("44.1.54")
+	want.Security = SecurityStrong
+	want.Mobile = true
+	want.Tablet = false
+	if !eqUA(want, got) {
+		t.Errorf("expected:\n%+v\ngot:\n%+v\n", want, got)
+	}
 }
 
 func TestChrome(t *testing.T) {

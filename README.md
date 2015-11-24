@@ -18,6 +18,7 @@ Parsing user agent strings is a hell. There is no standard for user agent string
   * https://developer.chrome.com/multidevice/user-agent
   * https://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariWebContent/OptimizingforSafarioniPhone/OptimizingforSafarioniPhone.html#//apple_ref/doc/uid/TP40006517-SW3
   * http://blogs.msdn.com/b/ieinternals/archive/2013/09/21/internet-explorer-11-user-agent-string-ua-string-sniffing-compatibility-with-gecko-webkit.aspx
+  * http://docs.aws.amazon.com/silk/latest/developerguide/user-agent.html
 
 for the supported user agents see:
   * browsers: [browser.go](browser.go)
