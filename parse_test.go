@@ -123,6 +123,41 @@ func TestGecko(t *testing.T) {
 		t.Errorf("expected:\n%+v\ngot:\n%+v\n", want, got)
 	}
 
+	got = Parse(`Mozilla/5.0 (iPod touch; CPU iPhone OS 8_3 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) FxiOS/1.0 Mobile/12F69 Safari/600.1.4`)
+	want.Type = Browser
+	want.OS = "iOS"
+	want.Name = "Firefox"
+	want.Version = mustParse("1.0.0")
+	want.Security = SecurityUnknown
+	want.Mobile = true
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`Mozilla/5.0 (iPhone; CPU iPhone OS 8_3 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) FxiOS/1.0 Mobile/12F69 Safari/600.1.4`)
+	want.Type = Browser
+	want.OS = "iOS"
+	want.Name = "Firefox"
+	want.Version = mustParse("1.0.0")
+	want.Security = SecurityUnknown
+	want.Mobile = true
+	want.Tablet = false
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`Mozilla/5.0 (iPad; CPU iPhone OS 8_3 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) FxiOS/1.0 Mobile/12F69 Safari/600.1.4`)
+	want.Type = Browser
+	want.OS = "iOS"
+	want.Name = "Firefox"
+	want.Version = mustParse("1.0.0")
+	want.Security = SecurityUnknown
+	want.Mobile = false
+	want.Tablet = true
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
 	// Silk on Kindle Fire: Tablet mode
 	got = Parse(`Mozilla/5.0 (Linux; Android 4.4.3; KFTHWI Build/KTU84M) AppleWebKit/537.36 (KHTML, like Gecko) Silk/44.1.54 like Chrome/44.0.2403.63 Safari/537.36`)
 	want.Type = Browser

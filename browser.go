@@ -97,7 +97,7 @@ func parseMozillaLike(l *lex, ua *UserAgent) bool {
 		ua.Security = parseSecurity(l)
 		ua.OS = "iOS"
 		ua.Tablet = true
-	case l.match("iPhone; ") || l.match("iPod; "):
+	case l.match("iPhone; ") || l.match("iPod; ") || l.match("iPod touch; "):
 		ua.Security = parseSecurity(l)
 		ua.OS = "iOS"
 		ua.Mobile = true
@@ -157,6 +157,7 @@ func parseGecko(l *lex) *UserAgent {
 	return ua
 }
 
+// Includes WebKit-based Firefox for iOS
 func parseChromeSafari(l *lex) *UserAgent {
 	ua := new()
 
@@ -177,6 +178,8 @@ func parseChromeSafari(l *lex) *UserAgent {
 	}
 	if ua.Name == "CriOS" {
 		ua.Name = "Chrome"
+	} else if ua.Name == "FxiOS" {
+		ua.Name = "Firefox"
 	} else if ua.Name == "Version" {
 		if l.match("Mobile/") {
 			if _, ok := l.span(" "); !ok {
