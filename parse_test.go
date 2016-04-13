@@ -230,6 +230,48 @@ func TestChrome(t *testing.T) {
 	if !eqUA(want, got) {
 		t.Errorf("expected %+v, got %+v\n", want, got)
 	}
+
+	got = Parse(`Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.76 Safari/537.36`)
+	want.Type = Browser
+	want.OS = "Android"
+	want.Name = "Chrome"
+	want.Version = mustParse("46.0.2490")
+	want.Security = SecurityUnknown
+	want.Mobile = false
+	want.Tablet = true
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+}
+
+// Android's Chromium-based web rendering library
+func TestWebView(t *testing.T) {
+	var got *UserAgent
+	want := &UserAgent{}
+
+	got = Parse(`Mozilla/5.0 (Linux; Android 5.1.1; Nexus 5 Build/LMY48B; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/43.0.2357.65 Mobile Safari/537.36`)
+	want.Type = Library
+	want.OS = "Android"
+	want.Name = "WebView"
+	want.Version = mustParse("43.0.2357")
+	want.Security = SecurityUnknown
+	want.Mobile = true
+	want.Tablet = false
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`Mozilla/5.0 (Linux; Android 5.0.2; SM-T350 Build/LRX22G; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/49.0.2623.105 Safari/537.36`)
+	want.Type = Library
+	want.OS = "Android"
+	want.Name = "WebView"
+	want.Version = mustParse("49.0.2623")
+	want.Security = SecurityUnknown
+	want.Mobile = false
+	want.Tablet = true
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
 }
 
 func TestSafari(t *testing.T) {

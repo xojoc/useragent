@@ -29,6 +29,7 @@ var browsers = map[string]*url.URL{
 	"NetSurf":   u("http://www.netsurf-browser.org/"),
 	"PhantomJS": u("http://phantomjs.org/"),
 	"Silk":      u("http://aws.amazon.com/documentation/silk/"),
+	"WebView":   u("http://developer.android.com/guide/webapps/webview.html"),
 }
 
 func parseBrowser(l *lex) *UserAgent {
@@ -181,15 +182,23 @@ func parseChromeSafari(l *lex) *UserAgent {
 	} else if ua.Name == "FxiOS" {
 		ua.Name = "Firefox"
 	} else if ua.Name == "Version" {
-		if l.match("Mobile/") {
-			if _, ok := l.span(" "); !ok {
+		if l.match("Chrome/") {
+			if !parseVersion(l, ua, " ") {
 				return nil
 			}
+			ua.Name = "WebView"
+			ua.Type = Library
+		} else {
+			if l.match("Mobile/") {
+				if _, ok := l.span(" "); !ok {
+					return nil
+				}
+			}
+			if !l.match("Safari/") {
+				return nil
+			}
+			ua.Name = "Safari"
 		}
-		if !l.match("Safari/") {
-			return nil
-		}
-		ua.Name = "Safari"
 	} else if ua.Name == "Silk" {
 		if l.match("like Chrome/") {
 			if _, ok := l.span(" "); !ok {
