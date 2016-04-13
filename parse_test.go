@@ -286,3 +286,40 @@ func TestGeneric(t *testing.T) {
 		t.Errorf("expected %+v, got %+v\n", want, got)
 	}
 }
+
+func TestPhantomJS(t *testing.T) {
+	var got *UserAgent
+	want := &UserAgent{}
+	want.Mobile = false
+	want.Tablet = false
+
+	got = Parse(`Mozilla/5.0 (Macintosh; Intel Mac OS X) AppleWebKit/538.1 (KHTML, like Gecko) PhantomJS/2.0.0 Safari/538.1`)
+	want.Type = Library
+	want.OS = "Mac OS X"
+	want.Name = "PhantomJS"
+	want.Version = mustParse("2.0.0")
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`Mozilla/5.0 (Macintosh; Intel Mac OS X) AppleWebKit/534.34 (KHTML, like Gecko) PhantomJS/1.9.0 (development) Safari/534.34`)
+	want.Type = Library
+	want.OS = "Mac OS X"
+	want.Name = "PhantomJS"
+	want.Version = mustParse("1.9.0")
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`Mozilla/5.0 (Unknown; Linux x86_64) AppleWebKit/538.1 (KHTML, like Gecko) PhantomJS/2.1.1 Safari/538.1`)
+	want.Type = Library
+	want.OS = "GNU/Linux"
+	want.Name = "PhantomJS"
+	want.Version = mustParse("2.1.1")
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+}

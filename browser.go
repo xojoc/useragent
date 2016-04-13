@@ -27,6 +27,7 @@ var browsers = map[string]*url.URL{
 	"IceCat":    u("https://www.gnu.org/software/gnuzilla/"),
 	"Iceweasel": u("https://wiki.debian.org/Iceweasel"),
 	"NetSurf":   u("http://www.netsurf-browser.org/"),
+	"PhantomJS": u("http://phantomjs.org/"),
 	"Silk":      u("http://aws.amazon.com/documentation/silk/"),
 }
 
@@ -62,23 +63,7 @@ func parseMozillaLike(l *lex, ua *UserAgent) bool {
 	switch {
 	case l.match("X11; "):
 		ua.Security = parseSecurity(l)
-		switch {
-		case l.match("Linux") || l.match("Ubuntu"):
-			ua.OS = "GNU/Linux"
-		case l.match("FreeBSD"):
-			ua.OS = "FreeBSD"
-		case l.match("OpenBSD"):
-			ua.OS = "OpenBSD"
-		case l.match("NetBSD"):
-			ua.OS = "NetBSD"
-		case l.match("Maemo"):
-			// FIXME: should it be GNU/Linux?
-			ua.OS = "Maemo"
-		case l.match("CrOS"):
-			ua.OS = "CrOS"
-		default:
-			return false
-		}
+		parseUnixLike(l, ua)
 	case l.match("Android"):
 		ua.Security = parseSecurity(l)
 		ua.OS = "Android"
@@ -116,6 +101,9 @@ func parseMozillaLike(l *lex, ua *UserAgent) bool {
 		ua.Security = parseSecurity(l)
 		ua.OS = "iOS"
 		ua.Mobile = true
+	case l.match("Unknown; "):
+		ua.Security = parseSecurity(l)
+		parseUnixLike(l, ua)
 	default:
 		return false
 	}
@@ -124,6 +112,28 @@ func parseMozillaLike(l *lex, ua *UserAgent) bool {
 		return false
 	}
 
+	return true
+}
+
+// Parse *nix variants (eg inside of a MozillaLike)
+func parseUnixLike(l *lex, ua *UserAgent) bool {
+	switch {
+	case l.match("Linux") || l.match("Ubuntu"):
+		ua.OS = "GNU/Linux"
+	case l.match("FreeBSD"):
+		ua.OS = "FreeBSD"
+	case l.match("OpenBSD"):
+		ua.OS = "OpenBSD"
+	case l.match("NetBSD"):
+		ua.OS = "NetBSD"
+	case l.match("Maemo"):
+		// FIXME: should it be GNU/Linux?
+		ua.OS = "Maemo"
+	case l.match("CrOS"):
+		ua.OS = "CrOS"
+	default:
+		return false
+	}
 	return true
 }
 
