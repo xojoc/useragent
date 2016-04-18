@@ -211,6 +211,12 @@ func parseNameVersion(l *lex, ua *UserAgent) bool {
 	}
 	ua.Name = s
 
+	// we know the types for some specific non-Browsers that are read here
+	switch s {
+	case "PhantomJS":
+		ua.Type = Library
+	}
+
 	return parseVersion(l, ua, " ")
 }
 

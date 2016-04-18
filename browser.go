@@ -27,7 +27,9 @@ var browsers = map[string]*url.URL{
 	"IceCat":    u("https://www.gnu.org/software/gnuzilla/"),
 	"Iceweasel": u("https://wiki.debian.org/Iceweasel"),
 	"NetSurf":   u("http://www.netsurf-browser.org/"),
+	"PhantomJS": u("http://phantomjs.org/"),
 	"Silk":      u("http://aws.amazon.com/documentation/silk/"),
+	"WebView":   u("http://developer.android.com/guide/webapps/webview.html"),
 }
 
 func parseBrowser(l *lex) *UserAgent {
@@ -62,23 +64,7 @@ func parseMozillaLike(l *lex, ua *UserAgent) bool {
 	switch {
 	case l.match("X11; "):
 		ua.Security = parseSecurity(l)
-		switch {
-		case l.match("Linux") || l.match("Ubuntu"):
-			ua.OS = "GNU/Linux"
-		case l.match("FreeBSD"):
-			ua.OS = "FreeBSD"
-		case l.match("OpenBSD"):
-			ua.OS = "OpenBSD"
-		case l.match("NetBSD"):
-			ua.OS = "NetBSD"
-		case l.match("Maemo"):
-			// FIXME: should it be GNU/Linux?
-			ua.OS = "Maemo"
-		case l.match("CrOS"):
-			ua.OS = "CrOS"
-		default:
-			return false
-		}
+		parseUnixLike(l, ua)
 	case l.match("Android"):
 		ua.Security = parseSecurity(l)
 		ua.OS = "Android"
@@ -112,10 +98,13 @@ func parseMozillaLike(l *lex, ua *UserAgent) bool {
 		ua.Security = parseSecurity(l)
 		ua.OS = "iOS"
 		ua.Tablet = true
-	case l.match("iPhone; ") || l.match("iPod; "):
+	case l.match("iPhone; ") || l.match("iPod; ") || l.match("iPod touch; "):
 		ua.Security = parseSecurity(l)
 		ua.OS = "iOS"
 		ua.Mobile = true
+	case l.match("Unknown; "):
+		ua.Security = parseSecurity(l)
+		parseUnixLike(l, ua)
 	default:
 		return false
 	}
@@ -124,6 +113,28 @@ func parseMozillaLike(l *lex, ua *UserAgent) bool {
 		return false
 	}
 
+	return true
+}
+
+// Parse *nix variants (eg inside of a MozillaLike)
+func parseUnixLike(l *lex, ua *UserAgent) bool {
+	switch {
+	case l.match("Linux") || l.match("Ubuntu"):
+		ua.OS = "GNU/Linux"
+	case l.match("FreeBSD"):
+		ua.OS = "FreeBSD"
+	case l.match("OpenBSD"):
+		ua.OS = "OpenBSD"
+	case l.match("NetBSD"):
+		ua.OS = "NetBSD"
+	case l.match("Maemo"):
+		// FIXME: should it be GNU/Linux?
+		ua.OS = "Maemo"
+	case l.match("CrOS"):
+		ua.OS = "CrOS"
+	default:
+		return false
+	}
 	return true
 }
 
@@ -147,6 +158,7 @@ func parseGecko(l *lex) *UserAgent {
 	return ua
 }
 
+// Includes WebKit-based Firefox for iOS
 func parseChromeSafari(l *lex) *UserAgent {
 	ua := new()
 
@@ -167,16 +179,26 @@ func parseChromeSafari(l *lex) *UserAgent {
 	}
 	if ua.Name == "CriOS" {
 		ua.Name = "Chrome"
+	} else if ua.Name == "FxiOS" {
+		ua.Name = "Firefox"
 	} else if ua.Name == "Version" {
-		if l.match("Mobile/") {
-			if _, ok := l.span(" "); !ok {
+		if l.match("Chrome/") {
+			if !parseVersion(l, ua, " ") {
 				return nil
 			}
+			ua.Name = "WebView"
+			ua.Type = Library
+		} else {
+			if l.match("Mobile/") {
+				if _, ok := l.span(" "); !ok {
+					return nil
+				}
+			}
+			if !l.match("Safari/") {
+				return nil
+			}
+			ua.Name = "Safari"
 		}
-		if !l.match("Safari/") {
-			return nil
-		}
-		ua.Name = "Safari"
 	} else if ua.Name == "Silk" {
 		if l.match("like Chrome/") {
 			if _, ok := l.span(" "); !ok {

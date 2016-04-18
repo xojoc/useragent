@@ -123,6 +123,41 @@ func TestGecko(t *testing.T) {
 		t.Errorf("expected:\n%+v\ngot:\n%+v\n", want, got)
 	}
 
+	got = Parse(`Mozilla/5.0 (iPod touch; CPU iPhone OS 8_3 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) FxiOS/1.0 Mobile/12F69 Safari/600.1.4`)
+	want.Type = Browser
+	want.OS = "iOS"
+	want.Name = "Firefox"
+	want.Version = mustParse("1.0.0")
+	want.Security = SecurityUnknown
+	want.Mobile = true
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`Mozilla/5.0 (iPhone; CPU iPhone OS 8_3 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) FxiOS/1.0 Mobile/12F69 Safari/600.1.4`)
+	want.Type = Browser
+	want.OS = "iOS"
+	want.Name = "Firefox"
+	want.Version = mustParse("1.0.0")
+	want.Security = SecurityUnknown
+	want.Mobile = true
+	want.Tablet = false
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`Mozilla/5.0 (iPad; CPU iPhone OS 8_3 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) FxiOS/1.0 Mobile/12F69 Safari/600.1.4`)
+	want.Type = Browser
+	want.OS = "iOS"
+	want.Name = "Firefox"
+	want.Version = mustParse("1.0.0")
+	want.Security = SecurityUnknown
+	want.Mobile = false
+	want.Tablet = true
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
 	// Silk on Kindle Fire: Tablet mode
 	got = Parse(`Mozilla/5.0 (Linux; Android 4.4.3; KFTHWI Build/KTU84M) AppleWebKit/537.36 (KHTML, like Gecko) Silk/44.1.54 like Chrome/44.0.2403.63 Safari/537.36`)
 	want.Type = Browser
@@ -192,6 +227,48 @@ func TestChrome(t *testing.T) {
 	want.Version = mustParse("19.0.1084")
 	want.Security = SecurityStrong
 	want.Mobile = true
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.76 Safari/537.36`)
+	want.Type = Browser
+	want.OS = "Android"
+	want.Name = "Chrome"
+	want.Version = mustParse("46.0.2490")
+	want.Security = SecurityUnknown
+	want.Mobile = false
+	want.Tablet = true
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+}
+
+// Android's Chromium-based web rendering library
+func TestWebView(t *testing.T) {
+	var got *UserAgent
+	want := &UserAgent{}
+
+	got = Parse(`Mozilla/5.0 (Linux; Android 5.1.1; Nexus 5 Build/LMY48B; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/43.0.2357.65 Mobile Safari/537.36`)
+	want.Type = Library
+	want.OS = "Android"
+	want.Name = "WebView"
+	want.Version = mustParse("43.0.2357")
+	want.Security = SecurityUnknown
+	want.Mobile = true
+	want.Tablet = false
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`Mozilla/5.0 (Linux; Android 5.0.2; SM-T350 Build/LRX22G; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/49.0.2623.105 Safari/537.36`)
+	want.Type = Library
+	want.OS = "Android"
+	want.Name = "WebView"
+	want.Version = mustParse("49.0.2623")
+	want.Security = SecurityUnknown
+	want.Mobile = false
+	want.Tablet = true
 	if !eqUA(want, got) {
 		t.Errorf("expected %+v, got %+v\n", want, got)
 	}
@@ -281,6 +358,43 @@ func TestGeneric(t *testing.T) {
 	want.OS = "unknown"
 	want.Name = "Googlebot"
 	want.Version = mustParse("2.1.0")
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+}
+
+func TestPhantomJS(t *testing.T) {
+	var got *UserAgent
+	want := &UserAgent{}
+	want.Mobile = false
+	want.Tablet = false
+
+	got = Parse(`Mozilla/5.0 (Macintosh; Intel Mac OS X) AppleWebKit/538.1 (KHTML, like Gecko) PhantomJS/2.0.0 Safari/538.1`)
+	want.Type = Library
+	want.OS = "Mac OS X"
+	want.Name = "PhantomJS"
+	want.Version = mustParse("2.0.0")
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`Mozilla/5.0 (Macintosh; Intel Mac OS X) AppleWebKit/534.34 (KHTML, like Gecko) PhantomJS/1.9.0 (development) Safari/534.34`)
+	want.Type = Library
+	want.OS = "Mac OS X"
+	want.Name = "PhantomJS"
+	want.Version = mustParse("1.9.0")
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`Mozilla/5.0 (Unknown; Linux x86_64) AppleWebKit/538.1 (KHTML, like Gecko) PhantomJS/2.1.1 Safari/538.1`)
+	want.Type = Library
+	want.OS = "GNU/Linux"
+	want.Name = "PhantomJS"
+	want.Version = mustParse("2.1.1")
 	want.Security = SecurityUnknown
 	if !eqUA(want, got) {
 		t.Errorf("expected %+v, got %+v\n", want, got)
