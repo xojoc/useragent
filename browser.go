@@ -32,6 +32,14 @@ var browsers = map[string]*url.URL{
 	"WebView":   u("http://developer.android.com/guide/webapps/webview.html"),
 }
 
+const (
+	osAndroid = "Android"
+	osMacOS   = "Mac OS X"
+	osIOS     = "iOS"
+	osLinux   = "GNU/Linux"
+	osWindows = "Windows"
+)
+
 func parseBrowser(l *lex) *UserAgent {
 	for _, f := range []parseFn{parseGecko, parseChromeSafari, parseIE1, parseIE2} {
 		if ua := f(newLex(l.s)); ua != nil {
@@ -67,7 +75,7 @@ func parseMozillaLike(l *lex, ua *UserAgent) bool {
 		parseUnixLike(l, ua)
 	case l.match("Android"):
 		ua.Security = parseSecurity(l)
-		ua.OS = "Android"
+		ua.OS = osAndroid
 		if l.match("; Mobile") {
 			ua.Mobile = true
 		} else if l.match("; Tablet") {
@@ -76,16 +84,16 @@ func parseMozillaLike(l *lex, ua *UserAgent) bool {
 	case l.match("Linux; "):
 		ua.Security = parseSecurity(l)
 		if l.match("Android") {
-			ua.OS = "Android"
+			ua.OS = osAndroid
 		} else {
 			return false
 		}
 	case l.match("Windows"):
 		ua.Security = parseSecurity(l)
-		ua.OS = "Windows"
+		ua.OS = osWindows
 	case l.match("Macintosh"):
 		ua.Security = parseSecurity(l)
-		ua.OS = "Mac OS X"
+		ua.OS = osMacOS
 	case l.match("Mobile; "):
 		ua.Security = parseSecurity(l)
 		ua.OS = "Firefox OS"
@@ -96,11 +104,11 @@ func parseMozillaLike(l *lex, ua *UserAgent) bool {
 		ua.Tablet = true
 	case l.match("iPad; "):
 		ua.Security = parseSecurity(l)
-		ua.OS = "iOS"
+		ua.OS = osIOS
 		ua.Tablet = true
 	case l.match("iPhone; ") || l.match("iPod; ") || l.match("iPod touch; "):
 		ua.Security = parseSecurity(l)
-		ua.OS = "iOS"
+		ua.OS = osIOS
 		ua.Mobile = true
 	case l.match("Unknown; "):
 		ua.Security = parseSecurity(l)
@@ -108,6 +116,9 @@ func parseMozillaLike(l *lex, ua *UserAgent) bool {
 	default:
 		return false
 	}
+
+	// swallow the error to preserve backwards compatibility
+	_ = parseOSVersion(l, ua)
 
 	if _, ok := l.span(") "); !ok {
 		return false
@@ -120,7 +131,7 @@ func parseMozillaLike(l *lex, ua *UserAgent) bool {
 func parseUnixLike(l *lex, ua *UserAgent) bool {
 	switch {
 	case l.match("Linux") || l.match("Ubuntu"):
-		ua.OS = "GNU/Linux"
+		ua.OS = osLinux
 	case l.match("FreeBSD"):
 		ua.OS = "FreeBSD"
 	case l.match("OpenBSD"):
@@ -236,10 +247,17 @@ func parseIE1(l *lex) *UserAgent {
 		return nil
 	}
 	ua.Name = "MSIE"
-	ua.OS = "Windows"
 	if !parseVersion(l, ua, ";") {
 		return nil
 	}
+
+	if !l.match(" Windows NT") {
+		return nil
+	}
+
+	ua.OS = osWindows
+	// swallow the error to preserve backwards compatibility
+	_ = parseOSVersion(l, ua)
 
 	return ua
 }
@@ -252,6 +270,14 @@ func parseIE2(l *lex) *UserAgent {
 	if !l.match("Mozilla") {
 		return nil
 	}
+	if _, ok := l.span("(Windows NT"); !ok {
+		return nil
+	}
+	ua.OS = osWindows
+
+	// swallow the error to preserve backwards compatibility
+	_ = parseOSVersion(l, ua)
+
 	if _, ok := l.span("Trident/"); !ok {
 		return nil
 	}
@@ -259,7 +285,6 @@ func parseIE2(l *lex) *UserAgent {
 		return nil
 	}
 	ua.Name = "MSIE"
-	ua.OS = "Windows"
 	if !parseVersion(l, ua, ")") {
 		return nil
 	}
