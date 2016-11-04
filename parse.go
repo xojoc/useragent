@@ -209,7 +209,7 @@ var genericVersionRegexp = regexp.MustCompile(`(?:[^\)]*?) (\d+\.\d+(\.\d+)?)\b`
 
 func parseOSVersion(l *lex, ua *UserAgent) bool {
 	switch ua.OS {
-	case osMacOS, osIOS:
+	case OSMacOS, OSiOS:
 		_, s, ok := l.spanRegexp(appleVersionRegexp)
 		if !ok {
 			return true
@@ -225,7 +225,7 @@ func parseOSVersion(l *lex, ua *UserAgent) bool {
 		ua.OSVersion = v
 		return true
 
-	case osAndroid, osWindows:
+	case OSAndroid, OSWindows:
 		_, s, ok := l.spanRegexp(genericVersionRegexp)
 		if !ok {
 			return true

@@ -33,11 +33,11 @@ var browsers = map[string]*url.URL{
 }
 
 const (
-	osAndroid = "Android"
-	osMacOS   = "Mac OS X"
-	osIOS     = "iOS"
-	osLinux   = "GNU/Linux"
-	osWindows = "Windows"
+	OSAndroid = "Android"
+	OSMacOS   = "Mac OS X"
+	OSiOS     = "iOS"
+	OSLinux   = "GNU/Linux"
+	OSWindows = "Windows"
 )
 
 func parseBrowser(l *lex) *UserAgent {
@@ -75,7 +75,7 @@ func parseMozillaLike(l *lex, ua *UserAgent) bool {
 		parseUnixLike(l, ua)
 	case l.match("Android"):
 		ua.Security = parseSecurity(l)
-		ua.OS = osAndroid
+		ua.OS = OSAndroid
 		if l.match("; Mobile") {
 			ua.Mobile = true
 		} else if l.match("; Tablet") {
@@ -84,16 +84,16 @@ func parseMozillaLike(l *lex, ua *UserAgent) bool {
 	case l.match("Linux; "):
 		ua.Security = parseSecurity(l)
 		if l.match("Android") {
-			ua.OS = osAndroid
+			ua.OS = OSAndroid
 		} else {
 			return false
 		}
 	case l.match("Windows"):
 		ua.Security = parseSecurity(l)
-		ua.OS = osWindows
+		ua.OS = OSWindows
 	case l.match("Macintosh"):
 		ua.Security = parseSecurity(l)
-		ua.OS = osMacOS
+		ua.OS = OSMacOS
 	case l.match("Mobile; "):
 		ua.Security = parseSecurity(l)
 		ua.OS = "Firefox OS"
@@ -104,11 +104,11 @@ func parseMozillaLike(l *lex, ua *UserAgent) bool {
 		ua.Tablet = true
 	case l.match("iPad; "):
 		ua.Security = parseSecurity(l)
-		ua.OS = osIOS
+		ua.OS = OSiOS
 		ua.Tablet = true
 	case l.match("iPhone; ") || l.match("iPod; ") || l.match("iPod touch; "):
 		ua.Security = parseSecurity(l)
-		ua.OS = osIOS
+		ua.OS = OSiOS
 		ua.Mobile = true
 	case l.match("Unknown; "):
 		ua.Security = parseSecurity(l)
@@ -131,7 +131,7 @@ func parseMozillaLike(l *lex, ua *UserAgent) bool {
 func parseUnixLike(l *lex, ua *UserAgent) bool {
 	switch {
 	case l.match("Linux") || l.match("Ubuntu"):
-		ua.OS = osLinux
+		ua.OS = OSLinux
 	case l.match("FreeBSD"):
 		ua.OS = "FreeBSD"
 	case l.match("OpenBSD"):
@@ -255,7 +255,7 @@ func parseIE1(l *lex) *UserAgent {
 		return nil
 	}
 
-	ua.OS = osWindows
+	ua.OS = OSWindows
 	// swallow the error to preserve backwards compatibility
 	_ = parseOSVersion(l, ua)
 
@@ -273,7 +273,7 @@ func parseIE2(l *lex) *UserAgent {
 	if _, ok := l.span("(Windows NT"); !ok {
 		return nil
 	}
-	ua.OS = osWindows
+	ua.OS = OSWindows
 
 	// swallow the error to preserve backwards compatibility
 	_ = parseOSVersion(l, ua)
