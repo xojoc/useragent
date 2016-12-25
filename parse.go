@@ -38,7 +38,7 @@ const (
 func (a Type) String() string {
 	switch a {
 	case Unknown:
-		return "Unkonwn Agent type"
+		return "Unknown Agent type"
 	case Browser:
 		return "Browser"
 	case Crawler:
