@@ -199,6 +199,28 @@ func TestChrome(t *testing.T) {
 		t.Errorf("expected %+v, got %+v\n", want, got)
 	}
 
+	// Fedora adds some info to the OS string
+	got = Parse(`Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.109 Safari/537.36`)
+	want.Type = Browser
+	want.OS = "GNU/Linux"
+	want.Name = "Chrome"
+	want.Version = mustParse("48.0.2564")
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	// Fedora adds some info to the OS string
+	got = Parse(`Mozilla/5.0 (X11; Fedora; adfsdfa asdf dsfLinux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.109 Safari/537.36 Linux/12`)
+	want.Type = Browser
+	want.OS = "GNU/Linux"
+	want.Name = "Chrome"
+	want.Version = mustParse("48.0.2564")
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
 	got = Parse(`Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36`)
 	want.Type = Browser
 	want.OS = "Windows"

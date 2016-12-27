@@ -133,6 +133,11 @@ func parseUnixLike(l *lex, ua *UserAgent) bool {
 	case l.match("CrOS"):
 		ua.OS = "CrOS"
 	default:
+		// Various distros use "... Distro; Linux x86_64) "
+		if _, ok := l.spanBefore("Linux", ") "); ok {
+			ua.OS = "GNU/Linux"
+			return true
+		}
 		return false
 	}
 	return true
