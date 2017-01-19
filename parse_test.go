@@ -422,3 +422,50 @@ func TestPhantomJS(t *testing.T) {
 		t.Errorf("expected %+v, got %+v\n", want, got)
 	}
 }
+
+func TestOpera(t *testing.T) {
+	var got *UserAgent
+	want := &UserAgent{}
+	want.Mobile = false
+	want.Tablet = false
+
+	got = Parse(`Opera/4.02 (Windows 98; U) [de]`)
+	want.Type = Browser
+	want.OS = "Windows"
+	want.Name = "Opera"
+	want.Version = mustParse("4.2.0")
+	want.Security = SecurityStrong
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`Opera/9.30 (Macintosh; PPC Mac OS X; U; ja)`)
+	want.Type = Browser
+	want.OS = "Mac OS X"
+	want.Name = "Opera"
+	want.Version = mustParse("9.30.0")
+	want.Security = SecurityStrong
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`Opera/7.52 (FreeBSD 4.7-RELEASE i386; U) [fr]`)
+	want.Type = Browser
+	want.OS = "FreeBSD"
+	want.Name = "Opera"
+	want.Version = mustParse("7.52.0")
+	want.Security = SecurityStrong
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`Opera/9.80 (Windows NT 6.1; U; en) Presto/2.10.229 Version/11.61`)
+	want.Type = Browser
+	want.OS = "Windows"
+	want.Name = "Opera"
+	want.Version = mustParse("11.61.0")
+	want.Security = SecurityStrong
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+}
