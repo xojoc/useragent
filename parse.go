@@ -179,6 +179,8 @@ func parseVersion(l *lex, ua *UserAgent, sep string) bool {
 	//  others miss the `patch` field in their version
 	//  so we add a fictious one
 	//   e.g. X.Y -> X.Y.0
+	//  We also strip leading zeroes from each number so that
+	//   semver is happy parsing them.
 
 	hypen := strings.SplitN(s, "-", 2)
 	fs := strings.Split(hypen[0], ".")
@@ -188,6 +190,12 @@ func parseVersion(l *lex, ua *UserAgent, sep string) bool {
 			fs = append(fs, "0")
 		} else {
 			maxfs = len(fs)
+		}
+	}
+	for i := range fs {
+		fs[i] = strings.TrimLeft(fs[i], "0")
+		if len(fs[i]) == 0 {
+			fs[i] = "0"
 		}
 	}
 	s = strings.Join(fs[:maxfs], ".")
