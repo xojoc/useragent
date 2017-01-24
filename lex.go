@@ -17,6 +17,7 @@ package useragent
 
 import (
 	"strings"
+	"unicode/utf8"
 )
 
 type lex struct {
@@ -48,11 +49,27 @@ func (l *lex) span(m string) (string, bool) {
 }
 
 func (l *lex) spanAny(chars string) (string, bool) {
+	// should this whole function loop-consume until char doesn't match?
 	i := strings.IndexAny(l.s[l.p:], chars)
 	if i < 0 {
 		return "", false
 	}
 	s := l.s[l.p : l.p+i]
-	l.p += i + len(chars)
+	_, matchWidth := utf8.DecodeRuneInString(l.s[l.p+i:])
+	l.p += i + matchWidth
+	return s, true
+}
+
+func (l *lex) spanBefore(m, stopAt string) (string, bool) {
+	i := strings.Index(l.s[l.p:], m)
+	if i < 0 {
+		return "", false
+	}
+	j := strings.Index(l.s[l.p:], stopAt)
+	if j >= 0 && j < i {
+		return "", false
+	}
+	s := l.s[l.p : l.p+i]
+	l.p += i + len(m)
 	return s, true
 }

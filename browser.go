@@ -27,13 +27,14 @@ var browsers = map[string]*url.URL{
 	"IceCat":    u("https://www.gnu.org/software/gnuzilla/"),
 	"Iceweasel": u("https://wiki.debian.org/Iceweasel"),
 	"NetSurf":   u("http://www.netsurf-browser.org/"),
+	"Opera":     u("http://www.opera.com/"),
 	"PhantomJS": u("http://phantomjs.org/"),
 	"Silk":      u("http://aws.amazon.com/documentation/silk/"),
 	"WebView":   u("http://developer.android.com/guide/webapps/webview.html"),
 }
 
 func parseBrowser(l *lex) *UserAgent {
-	for _, f := range []parseFn{parseGecko, parseChromeSafari, parseIE1, parseIE2} {
+	for _, f := range []parseFn{parseGecko, parseChromeSafari, parseIE1, parseIE2, parseOperaClassic} {
 		if ua := f(newLex(l.s)); ua != nil {
 			return ua
 		}
@@ -43,11 +44,14 @@ func parseBrowser(l *lex) *UserAgent {
 
 func parseSecurity(l *lex) Security {
 	switch {
-	case l.match("U; "):
+	case l.match("U"):
+		l.match("; ")
 		return SecurityStrong
-	case l.match("I; "):
+	case l.match("I"):
+		l.match("; ")
 		return SecurityWeak
-	case l.match("N; "):
+	case l.match("N"):
+		l.match("; ")
 		return SecurityNone
 	default:
 		return SecurityUnknown
@@ -133,6 +137,11 @@ func parseUnixLike(l *lex, ua *UserAgent) bool {
 	case l.match("CrOS"):
 		ua.OS = "CrOS"
 	default:
+		// Various distros use "... Distro; Linux x86_64) "
+		if _, ok := l.spanBefore("Linux", ") "); ok {
+			ua.OS = "GNU/Linux"
+			return true
+		}
 		return false
 	}
 	return true
@@ -261,6 +270,49 @@ func parseIE2(l *lex) *UserAgent {
 	ua.Name = "MSIE"
 	ua.OS = "Windows"
 	if !parseVersion(l, ua, ")") {
+		return nil
+	}
+
+	return ua
+}
+
+// Non-Mozilla Opera UAs
+func parseOperaClassic(l *lex) *UserAgent {
+	ua := new()
+
+	if !l.match("Opera/") {
+		return nil
+	}
+	ua.Type = Browser
+	ua.Name = "Opera"
+	// Start with the Opera version (versions 9.80+ will overwrite later)
+	if !parseVersion(l, ua, " ") {
+		return nil
+	}
+	if _, ok := l.span("("); !ok {
+		return nil
+	}
+	switch {
+	case l.match("Windows"):
+		ua.OS = "Windows"
+	case l.match("Macintosh"):
+		ua.OS = "Mac OS X"
+		l.spanBefore("OS X", ")")
+	default:
+		if !parseUnixLike(l, ua) {
+			return nil
+		}
+	}
+	if _, ok := l.spanBefore("; ", ")"); ok {
+		ua.Security = parseSecurity(l)
+	}
+	if _, ok := l.span(")"); !ok {
+		return nil
+	}
+	if l.match(" Presto/") {
+		l.span(" ")
+	}
+	if l.match("Version/") && !parseVersion(l, ua, " ") {
 		return nil
 	}
 

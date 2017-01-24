@@ -199,6 +199,28 @@ func TestChrome(t *testing.T) {
 		t.Errorf("expected %+v, got %+v\n", want, got)
 	}
 
+	// Fedora adds some info to the OS string
+	got = Parse(`Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.109 Safari/537.36`)
+	want.Type = Browser
+	want.OS = "GNU/Linux"
+	want.Name = "Chrome"
+	want.Version = mustParse("48.0.2564")
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	// Fedora adds some info to the OS string
+	got = Parse(`Mozilla/5.0 (X11; Fedora; adfsdfa asdf dsfLinux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.109 Safari/537.36 Linux/12`)
+	want.Type = Browser
+	want.OS = "GNU/Linux"
+	want.Name = "Chrome"
+	want.Version = mustParse("48.0.2564")
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
 	got = Parse(`Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36`)
 	want.Type = Browser
 	want.OS = "Windows"
@@ -396,6 +418,53 @@ func TestPhantomJS(t *testing.T) {
 	want.Name = "PhantomJS"
 	want.Version = mustParse("2.1.1")
 	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+}
+
+func TestOpera(t *testing.T) {
+	var got *UserAgent
+	want := &UserAgent{}
+	want.Mobile = false
+	want.Tablet = false
+
+	got = Parse(`Opera/4.02 (Windows 98; U) [de]`)
+	want.Type = Browser
+	want.OS = "Windows"
+	want.Name = "Opera"
+	want.Version = mustParse("4.2.0")
+	want.Security = SecurityStrong
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`Opera/9.30 (Macintosh; PPC Mac OS X; U; ja)`)
+	want.Type = Browser
+	want.OS = "Mac OS X"
+	want.Name = "Opera"
+	want.Version = mustParse("9.30.0")
+	want.Security = SecurityStrong
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`Opera/7.52 (FreeBSD 4.7-RELEASE i386; U) [fr]`)
+	want.Type = Browser
+	want.OS = "FreeBSD"
+	want.Name = "Opera"
+	want.Version = mustParse("7.52.0")
+	want.Security = SecurityStrong
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`Opera/9.80 (Windows NT 6.1; U; en) Presto/2.10.229 Version/11.61`)
+	want.Type = Browser
+	want.OS = "Windows"
+	want.Name = "Opera"
+	want.Version = mustParse("11.61.0")
+	want.Security = SecurityStrong
 	if !eqUA(want, got) {
 		t.Errorf("expected %+v, got %+v\n", want, got)
 	}
