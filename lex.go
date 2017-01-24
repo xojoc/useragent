@@ -29,13 +29,30 @@ func newLex(s string) *lex {
 	return &lex{s, 0}
 }
 
+// Returns true iff current position matches input string
+func (l *lex) matchNoConsume(m string) bool {
+	return strings.HasPrefix(l.s[l.p:], m)
+}
+
+// If current position matches input string, consumes it and returns true (else false)
 func (l *lex) match(m string) bool {
-	if !strings.HasPrefix(l.s[l.p:], m) {
+	if !l.matchNoConsume(m) {
 		return false
 	}
 
 	l.p += len(m)
 	return true
+}
+
+// Consumes first provided string that matches the current position;
+// returns true on finding any match, false otherwise
+func (l *lex) matchFirst(args ...string) bool {
+	for _, m := range args {
+		if l.match(m) {
+			return true
+		}
+	}
+	return false
 }
 
 func (l *lex) span(m string) (string, bool) {
