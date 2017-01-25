@@ -45,17 +45,19 @@ func parseBrowser(l *lex) *UserAgent {
 func parseSecurity(l *lex) Security {
 	switch {
 	case l.match("U"):
-		l.match("; ")
-		return SecurityStrong
+		if l.matchFirst("; ", ";") || l.matchNoConsume(")") {
+			return SecurityStrong
+		}
 	case l.match("I"):
-		l.match("; ")
-		return SecurityWeak
+		if l.matchFirst("; ", ";") || l.matchNoConsume(")") {
+			return SecurityWeak
+		}
 	case l.match("N"):
-		l.match("; ")
-		return SecurityNone
-	default:
-		return SecurityUnknown
+		if l.matchFirst("; ", ";") || l.matchNoConsume(")") {
+			return SecurityNone
+		}
 	}
+	return SecurityUnknown
 }
 
 func parseMozillaLike(l *lex, ua *UserAgent) bool {
@@ -85,9 +87,11 @@ func parseMozillaLike(l *lex, ua *UserAgent) bool {
 			return false
 		}
 	case l.match("Windows"):
+		l.span("; ")
 		ua.Security = parseSecurity(l)
 		ua.OS = "Windows"
 	case l.match("Macintosh"):
+		l.span("; ")
 		ua.Security = parseSecurity(l)
 		ua.OS = "Mac OS X"
 	case l.match("Mobile; "):
@@ -163,6 +167,12 @@ func parseGecko(l *lex) *UserAgent {
 	if !parseNameVersion(l, ua) {
 		return nil
 	}
+	if _, ok := l.span("Opera "); ok {
+		if !parseVersion(l, ua, " ") {
+			return nil
+		}
+		ua.Name = "Opera"
+	}
 
 	return ua
 }
@@ -224,6 +234,12 @@ func parseChromeSafari(l *lex) *UserAgent {
 			ua.Tablet = true
 		}
 	}
+	if _, ok := l.span("OPR/"); ok {
+		if !parseVersion(l, ua, " ") {
+			return nil
+		}
+		ua.Name = "Opera"
+	}
 
 	return ua
 }
@@ -248,6 +264,12 @@ func parseIE1(l *lex) *UserAgent {
 	ua.OS = "Windows"
 	if !parseVersion(l, ua, ";") {
 		return nil
+	}
+	if _, ok := l.span("Opera "); ok {
+		if !parseVersion(l, ua, " ") {
+			return nil
+		}
+		ua.Name = "Opera"
 	}
 
 	return ua
@@ -308,6 +330,11 @@ func parseOperaClassic(l *lex) *UserAgent {
 	}
 	if _, ok := l.span(")"); !ok {
 		return nil
+	} else {
+		// Opera occasionally uses nested parens; for simplicity, skip over all instead of matching
+		for ok {
+			_, ok = l.span(")")
+		}
 	}
 	if l.match(" Presto/") {
 		l.span(" ")
