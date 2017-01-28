@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"github.com/blang/semver"
 	"net/url"
+	"regexp"
 	"strings"
 )
 
@@ -107,8 +108,9 @@ type UserAgent struct {
 	//  CrOS
 	//   etc.
 	// If the os is not known, OS will be `unknown'.
-	OS       string
-	Security Security
+	OS        string
+	OSVersion semver.Version
+	Security  Security
 	// URL with more information about the user agent (in most cases it's the home page).
 	// If unknown is nil.
 	URL *url.URL
@@ -123,9 +125,10 @@ func (ua *UserAgent) String() string {
 Name: %v
 Version: %v
 OS: %v
+OSVersion: %v
 Security: %v
 Mobile: %v
-Tablet: %v`, ua.Type, ua.Name, ua.Version, ua.OS, ua.Security, ua.Mobile, ua.Tablet)
+Tablet: %v`, ua.Type, ua.Name, ua.Version, ua.OS, ua.OSVersion, ua.Security, ua.Mobile, ua.Tablet)
 }
 
 func new() *UserAgent {
@@ -199,6 +202,46 @@ func parseVersion(l *lex, ua *UserAgent, sep string) bool {
 	}
 
 	return true
+}
+
+var appleVersionRegexp = regexp.MustCompile(`(?:[^\)]+?)\b(\d+_\d+(_\d+)?)\b`)
+var genericVersionRegexp = regexp.MustCompile(`(?:[^\)]*?) (\d+\.\d+(\.\d+)?)\b`)
+
+func parseOSVersion(l *lex, ua *UserAgent) bool {
+	switch ua.OS {
+	case OSMacOS, OSiOS:
+		_, s, ok := l.spanRegexp(appleVersionRegexp)
+		if !ok {
+			return true
+		}
+
+		s = strings.Replace(s, "_", ".", -1)
+
+		v, err := semver.ParseTolerant(s)
+		if err != nil {
+			return false
+		}
+
+		ua.OSVersion = v
+		return true
+
+	case OSAndroid, OSWindows:
+		_, s, ok := l.spanRegexp(genericVersionRegexp)
+		if !ok {
+			return true
+		}
+
+		v, err := semver.ParseTolerant(s)
+		if err != nil {
+			return false
+		}
+
+		ua.OSVersion = v
+		return true
+
+	default:
+		return false
+	}
 }
 
 func parseNameVersion(l *lex, ua *UserAgent) bool {
