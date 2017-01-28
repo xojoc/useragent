@@ -27,6 +27,7 @@ var browsers = map[string]*url.URL{
 	"IceCat":    u("https://www.gnu.org/software/gnuzilla/"),
 	"Iceweasel": u("https://wiki.debian.org/Iceweasel"),
 	"NetSurf":   u("http://www.netsurf-browser.org/"),
+	"Opera":     u("http://www.opera.com/"),
 	"PhantomJS": u("http://phantomjs.org/"),
 	"Silk":      u("http://aws.amazon.com/documentation/silk/"),
 	"WebView":   u("http://developer.android.com/guide/webapps/webview.html"),
@@ -41,7 +42,7 @@ const (
 )
 
 func parseBrowser(l *lex) *UserAgent {
-	for _, f := range []parseFn{parseGecko, parseChromeSafari, parseIE1, parseIE2} {
+	for _, f := range []parseFn{parseGecko, parseChromeSafari, parseIE1, parseIE2, parseOperaClassic} {
 		if ua := f(newLex(l.s)); ua != nil {
 			return ua
 		}
@@ -51,15 +52,20 @@ func parseBrowser(l *lex) *UserAgent {
 
 func parseSecurity(l *lex) Security {
 	switch {
-	case l.match("U; "):
-		return SecurityStrong
-	case l.match("I; "):
-		return SecurityWeak
-	case l.match("N; "):
-		return SecurityNone
-	default:
-		return SecurityUnknown
+	case l.match("U"):
+		if l.matchFirst("; ", ";") || l.matchNoConsume(")") {
+			return SecurityStrong
+		}
+	case l.match("I"):
+		if l.matchFirst("; ", ";") || l.matchNoConsume(")") {
+			return SecurityWeak
+		}
+	case l.match("N"):
+		if l.matchFirst("; ", ";") || l.matchNoConsume(")") {
+			return SecurityNone
+		}
 	}
+	return SecurityUnknown
 }
 
 func parseMozillaLike(l *lex, ua *UserAgent) bool {
@@ -89,9 +95,11 @@ func parseMozillaLike(l *lex, ua *UserAgent) bool {
 			return false
 		}
 	case l.match("Windows"):
+		l.span("; ")
 		ua.Security = parseSecurity(l)
 		ua.OS = OSWindows
 	case l.match("Macintosh"):
+		l.span("; ")
 		ua.Security = parseSecurity(l)
 		ua.OS = OSMacOS
 	case l.match("Mobile; "):
@@ -144,6 +152,11 @@ func parseUnixLike(l *lex, ua *UserAgent) bool {
 	case l.match("CrOS"):
 		ua.OS = "CrOS"
 	default:
+		// Various distros use "... Distro; Linux x86_64) "
+		if _, ok := l.spanBefore("Linux", ") "); ok {
+			ua.OS = "GNU/Linux"
+			return true
+		}
 		return false
 	}
 	return true
@@ -164,6 +177,12 @@ func parseGecko(l *lex) *UserAgent {
 	}
 	if !parseNameVersion(l, ua) {
 		return nil
+	}
+	if _, ok := l.span("Opera "); ok {
+		if !parseVersion(l, ua, " ") {
+			return nil
+		}
+		ua.Name = "Opera"
 	}
 
 	return ua
@@ -226,6 +245,12 @@ func parseChromeSafari(l *lex) *UserAgent {
 			ua.Tablet = true
 		}
 	}
+	if _, ok := l.span("OPR/"); ok {
+		if !parseVersion(l, ua, " ") {
+			return nil
+		}
+		ua.Name = "Opera"
+	}
 
 	return ua
 }
@@ -249,6 +274,12 @@ func parseIE1(l *lex) *UserAgent {
 	ua.Name = "MSIE"
 	if !parseVersion(l, ua, ";") {
 		return nil
+	}
+	if _, ok := l.span("Opera "); ok {
+		if !parseVersion(l, ua, " ") {
+			return nil
+		}
+		ua.Name = "Opera"
 	}
 
 	if !l.match(" Windows NT") {
@@ -286,6 +317,54 @@ func parseIE2(l *lex) *UserAgent {
 	}
 	ua.Name = "MSIE"
 	if !parseVersion(l, ua, ")") {
+		return nil
+	}
+
+	return ua
+}
+
+// Non-Mozilla Opera UAs
+func parseOperaClassic(l *lex) *UserAgent {
+	ua := new()
+
+	if !l.match("Opera/") {
+		return nil
+	}
+	ua.Type = Browser
+	ua.Name = "Opera"
+	// Start with the Opera version (versions 9.80+ will overwrite later)
+	if !parseVersion(l, ua, " ") {
+		return nil
+	}
+	if _, ok := l.span("("); !ok {
+		return nil
+	}
+	switch {
+	case l.match("Windows"):
+		ua.OS = "Windows"
+	case l.match("Macintosh"):
+		ua.OS = "Mac OS X"
+		l.spanBefore("OS X", ")")
+	default:
+		if !parseUnixLike(l, ua) {
+			return nil
+		}
+	}
+	if _, ok := l.spanBefore("; ", ")"); ok {
+		ua.Security = parseSecurity(l)
+	}
+	if _, ok := l.span(")"); !ok {
+		return nil
+	} else {
+		// Opera occasionally uses nested parens; for simplicity, skip over all instead of matching
+		for ok {
+			_, ok = l.span(")")
+		}
+	}
+	if l.match(" Presto/") {
+		l.span(" ")
+	}
+	if l.match("Version/") && !parseVersion(l, ua, " ") {
 		return nil
 	}
 
