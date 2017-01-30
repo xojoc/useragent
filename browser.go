@@ -154,7 +154,7 @@ func parseUnixLike(l *lex, ua *UserAgent) bool {
 	default:
 		// Various distros use "... Distro; Linux x86_64) "
 		if _, ok := l.spanBefore("Linux", ") "); ok {
-			ua.OS = "GNU/Linux"
+			ua.OS = OSLinux
 			return true
 		}
 		return false
@@ -238,7 +238,7 @@ func parseChromeSafari(l *lex) *UserAgent {
 			return nil
 		}
 	}
-	if ua.OS == "Android" {
+	if ua.OS == OSAndroid {
 		if l.match("Mobile") {
 			ua.Mobile = true
 		} else {
@@ -341,9 +341,9 @@ func parseOperaClassic(l *lex) *UserAgent {
 	}
 	switch {
 	case l.match("Windows"):
-		ua.OS = "Windows"
+		ua.OS = OSWindows
 	case l.match("Macintosh"):
-		ua.OS = "Mac OS X"
+		ua.OS = OSMacOS
 		l.spanBefore("OS X", ")")
 	default:
 		if !parseUnixLike(l, ua) {
