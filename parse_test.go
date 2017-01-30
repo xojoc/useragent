@@ -473,6 +473,7 @@ func TestOpera(t *testing.T) {
 	got = Parse(`Opera/4.02 (Windows 98; U) [de]`)
 	want.Type = Browser
 	want.OS = "Windows"
+	want.OSVersion = semver.Version{}
 	want.Name = "Opera"
 	want.Version = mustParse("4.2.0")
 	want.Security = SecurityStrong
@@ -483,6 +484,7 @@ func TestOpera(t *testing.T) {
 	got = Parse(`Opera/9.30 (Macintosh; PPC Mac OS X; U; ja)`)
 	want.Type = Browser
 	want.OS = "Mac OS X"
+	want.OSVersion = semver.Version{}
 	want.Name = "Opera"
 	want.Version = mustParse("9.30.0")
 	want.Security = SecurityStrong
@@ -493,6 +495,7 @@ func TestOpera(t *testing.T) {
 	got = Parse(`Opera/7.52 (FreeBSD 4.7-RELEASE i386; U) [fr]`)
 	want.Type = Browser
 	want.OS = "FreeBSD"
+	want.OSVersion = semver.Version{}
 	want.Name = "Opera"
 	want.Version = mustParse("7.52.0")
 	want.Security = SecurityStrong
@@ -503,6 +506,7 @@ func TestOpera(t *testing.T) {
 	got = Parse(`Opera/9.80 (Windows NT 6.1; U; en) Presto/2.10.229 Version/11.61`)
 	want.Type = Browser
 	want.OS = "Windows"
+	want.OSVersion = mustParse("6.1.0")
 	want.Name = "Opera"
 	want.Version = mustParse("11.61.0")
 	want.Security = SecurityStrong
@@ -513,6 +517,7 @@ func TestOpera(t *testing.T) {
 	got = Parse(`Opera/9.80 (Linux mips; U; HbbTV/1.1.1 (; TechniSat; DigiPal ISIO HD; 2.70.0.5; 57.0-6; ); CE-HTML/1.0 (); MB_BP/1.0 (TechniSat; DigiPal ISIO HD; ); TechniSat DigiPal ISIO HD BCM3 STB; de) Presto/2.12.407 Version/12.51`)
 	want.Type = Browser
 	want.OS = "GNU/Linux"
+	want.OSVersion = semver.Version{}
 	want.Name = "Opera"
 	want.Version = mustParse("12.51.0")
 	want.Security = SecurityStrong
@@ -523,6 +528,7 @@ func TestOpera(t *testing.T) {
 	got = Parse(`Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0; zh-tw) Opera 11.00`)
 	want.Type = Browser
 	want.OS = "Windows"
+	want.OSVersion = mustParse("6.0.0")
 	want.Name = "Opera"
 	want.Version = mustParse("11.0.0")
 	want.Security = SecurityUnknown
@@ -533,6 +539,7 @@ func TestOpera(t *testing.T) {
 	got = Parse(`Mozilla/5.0 (Windows NT 6.1; U; nl; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6 Opera 11.01`)
 	want.Type = Browser
 	want.OS = "Windows"
+	want.OSVersion = mustParse("6.1.0")
 	want.Name = "Opera"
 	want.Version = mustParse("11.1.0")
 	want.Security = SecurityStrong
@@ -543,6 +550,7 @@ func TestOpera(t *testing.T) {
 	got = Parse(`Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.52 Safari/537.36 OPR/15.0.1147.100`)
 	want.Type = Browser
 	want.OS = "Windows"
+	want.OSVersion = mustParse("6.1.0")
 	want.Name = "Opera"
 	want.Version = mustParse("15.0.1147")
 	want.Security = SecurityUnknown
@@ -553,6 +561,7 @@ func TestOpera(t *testing.T) {
 	got = Parse(`Mozilla/5.0 (Linux; Android 4.0.4; Galaxy Nexus Build/IMM76B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.52 Mobile Safari/537.36 OPR/15.0.1147.100`)
 	want.Type = Browser
 	want.OS = "Android"
+	want.OSVersion = mustParse("4.0.4")
 	want.Name = "Opera"
 	want.Version = mustParse("15.0.1147")
 	want.Security = SecurityUnknown

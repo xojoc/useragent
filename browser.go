@@ -16,6 +16,7 @@
 package useragent
 
 import (
+	"github.com/blang/semver"
 	"net/url"
 )
 
@@ -95,9 +96,11 @@ func parseMozillaLike(l *lex, ua *UserAgent) bool {
 			return false
 		}
 	case l.match("Windows"):
+		ua.OS = OSWindows
+		// Windows has version before security
+		_ = parseOSVersion(l, ua)
 		l.span("; ")
 		ua.Security = parseSecurity(l)
-		ua.OS = OSWindows
 	case l.match("Macintosh"):
 		l.span("; ")
 		ua.Security = parseSecurity(l)
@@ -125,8 +128,10 @@ func parseMozillaLike(l *lex, ua *UserAgent) bool {
 		return false
 	}
 
-	// swallow the error to preserve backwards compatibility
-	_ = parseOSVersion(l, ua)
+	// OS Version is not required, and may be set above
+	if ua.OSVersion.Equals(semver.Version{}) {
+		_ = parseOSVersion(l, ua)
+	}
 
 	if _, ok := l.span(") "); !ok {
 		return false
@@ -271,17 +276,11 @@ func parseIE1(l *lex) *UserAgent {
 	if !l.match("MSIE ") {
 		return nil
 	}
+
 	ua.Name = "MSIE"
 	if !parseVersion(l, ua, ";") {
 		return nil
 	}
-	if _, ok := l.span("Opera "); ok {
-		if !parseVersion(l, ua, " ") {
-			return nil
-		}
-		ua.Name = "Opera"
-	}
-
 	if !l.match(" Windows NT") {
 		return nil
 	}
@@ -289,6 +288,13 @@ func parseIE1(l *lex) *UserAgent {
 	ua.OS = OSWindows
 	// swallow the error to preserve backwards compatibility
 	_ = parseOSVersion(l, ua)
+
+	if _, ok := l.span("Opera "); ok {
+		if !parseVersion(l, ua, " ") {
+			return nil
+		}
+		ua.Name = "Opera"
+	}
 
 	return ua
 }
@@ -350,6 +356,11 @@ func parseOperaClassic(l *lex) *UserAgent {
 			return nil
 		}
 	}
+
+	// swallow the error to preserve backwards compatibility
+	_ = parseOSVersion(l, ua)
+
+	// Get security if present, then get to the end of the parens block
 	if _, ok := l.spanBefore("; ", ")"); ok {
 		ua.Security = parseSecurity(l)
 	}
