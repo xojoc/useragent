@@ -16,6 +16,7 @@
 package useragent
 
 import (
+	"regexp"
 	"strings"
 	"unicode/utf8"
 )
@@ -89,4 +90,18 @@ func (l *lex) spanBefore(m, stopAt string) (string, bool) {
 	s := l.s[l.p : l.p+i]
 	l.p += i + len(m)
 	return s, true
+}
+
+// assumes the first group is the bit we want
+func (l *lex) spanRegexp(re *regexp.Regexp) (before string, match string, success bool) {
+	loc := re.FindStringSubmatchIndex(l.s[l.p:])
+	if loc == nil {
+		return "", "", false
+	}
+	success = true
+	start, end := loc[2], loc[3]
+	before = l.s[l.p : l.p+start]
+	match = l.s[l.p:][start:end]
+	l.p += end
+	return
 }

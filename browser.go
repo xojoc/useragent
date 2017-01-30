@@ -16,6 +16,7 @@
 package useragent
 
 import (
+	"github.com/blang/semver"
 	"net/url"
 )
 
@@ -32,6 +33,14 @@ var browsers = map[string]*url.URL{
 	"Silk":      u("http://aws.amazon.com/documentation/silk/"),
 	"WebView":   u("http://developer.android.com/guide/webapps/webview.html"),
 }
+
+const (
+	OSAndroid = "Android"
+	OSMacOS   = "Mac OS X"
+	OSiOS     = "iOS"
+	OSLinux   = "GNU/Linux"
+	OSWindows = "Windows"
+)
 
 func parseBrowser(l *lex) *UserAgent {
 	for _, f := range []parseFn{parseGecko, parseChromeSafari, parseIE1, parseIE2, parseOperaClassic} {
@@ -73,7 +82,7 @@ func parseMozillaLike(l *lex, ua *UserAgent) bool {
 		parseUnixLike(l, ua)
 	case l.match("Android"):
 		ua.Security = parseSecurity(l)
-		ua.OS = "Android"
+		ua.OS = OSAndroid
 		if l.match("; Mobile") {
 			ua.Mobile = true
 		} else if l.match("; Tablet") {
@@ -82,18 +91,20 @@ func parseMozillaLike(l *lex, ua *UserAgent) bool {
 	case l.match("Linux; "):
 		ua.Security = parseSecurity(l)
 		if l.match("Android") {
-			ua.OS = "Android"
+			ua.OS = OSAndroid
 		} else {
 			return false
 		}
 	case l.match("Windows"):
+		ua.OS = OSWindows
+		// Windows has version before security
+		_ = parseOSVersion(l, ua)
 		l.span("; ")
 		ua.Security = parseSecurity(l)
-		ua.OS = "Windows"
 	case l.match("Macintosh"):
 		l.span("; ")
 		ua.Security = parseSecurity(l)
-		ua.OS = "Mac OS X"
+		ua.OS = OSMacOS
 	case l.match("Mobile; "):
 		ua.Security = parseSecurity(l)
 		ua.OS = "Firefox OS"
@@ -104,17 +115,22 @@ func parseMozillaLike(l *lex, ua *UserAgent) bool {
 		ua.Tablet = true
 	case l.match("iPad; "):
 		ua.Security = parseSecurity(l)
-		ua.OS = "iOS"
+		ua.OS = OSiOS
 		ua.Tablet = true
 	case l.match("iPhone; ") || l.match("iPod; ") || l.match("iPod touch; "):
 		ua.Security = parseSecurity(l)
-		ua.OS = "iOS"
+		ua.OS = OSiOS
 		ua.Mobile = true
 	case l.match("Unknown; "):
 		ua.Security = parseSecurity(l)
 		parseUnixLike(l, ua)
 	default:
 		return false
+	}
+
+	// OS Version is not required, and may be set above
+	if ua.OSVersion.Equals(semver.Version{}) {
+		_ = parseOSVersion(l, ua)
 	}
 
 	if _, ok := l.span(") "); !ok {
@@ -128,7 +144,7 @@ func parseMozillaLike(l *lex, ua *UserAgent) bool {
 func parseUnixLike(l *lex, ua *UserAgent) bool {
 	switch {
 	case l.match("Linux") || l.match("Ubuntu"):
-		ua.OS = "GNU/Linux"
+		ua.OS = OSLinux
 	case l.match("FreeBSD"):
 		ua.OS = "FreeBSD"
 	case l.match("OpenBSD"):
@@ -143,7 +159,7 @@ func parseUnixLike(l *lex, ua *UserAgent) bool {
 	default:
 		// Various distros use "... Distro; Linux x86_64) "
 		if _, ok := l.spanBefore("Linux", ") "); ok {
-			ua.OS = "GNU/Linux"
+			ua.OS = OSLinux
 			return true
 		}
 		return false
@@ -227,7 +243,7 @@ func parseChromeSafari(l *lex) *UserAgent {
 			return nil
 		}
 	}
-	if ua.OS == "Android" {
+	if ua.OS == OSAndroid {
 		if l.match("Mobile") {
 			ua.Mobile = true
 		} else {
@@ -260,11 +276,19 @@ func parseIE1(l *lex) *UserAgent {
 	if !l.match("MSIE ") {
 		return nil
 	}
+
 	ua.Name = "MSIE"
-	ua.OS = "Windows"
 	if !parseVersion(l, ua, ";") {
 		return nil
 	}
+	if !l.match(" Windows NT") {
+		return nil
+	}
+
+	ua.OS = OSWindows
+	// swallow the error to preserve backwards compatibility
+	_ = parseOSVersion(l, ua)
+
 	if _, ok := l.span("Opera "); ok {
 		if !parseVersion(l, ua, " ") {
 			return nil
@@ -283,6 +307,14 @@ func parseIE2(l *lex) *UserAgent {
 	if !l.match("Mozilla") {
 		return nil
 	}
+	if _, ok := l.span("(Windows NT"); !ok {
+		return nil
+	}
+	ua.OS = OSWindows
+
+	// swallow the error to preserve backwards compatibility
+	_ = parseOSVersion(l, ua)
+
 	if _, ok := l.span("Trident/"); !ok {
 		return nil
 	}
@@ -290,7 +322,6 @@ func parseIE2(l *lex) *UserAgent {
 		return nil
 	}
 	ua.Name = "MSIE"
-	ua.OS = "Windows"
 	if !parseVersion(l, ua, ")") {
 		return nil
 	}
@@ -316,15 +347,20 @@ func parseOperaClassic(l *lex) *UserAgent {
 	}
 	switch {
 	case l.match("Windows"):
-		ua.OS = "Windows"
+		ua.OS = OSWindows
 	case l.match("Macintosh"):
-		ua.OS = "Mac OS X"
+		ua.OS = OSMacOS
 		l.spanBefore("OS X", ")")
 	default:
 		if !parseUnixLike(l, ua) {
 			return nil
 		}
 	}
+
+	// swallow the error to preserve backwards compatibility
+	_ = parseOSVersion(l, ua)
+
+	// Get security if present, then get to the end of the parens block
 	if _, ok := l.spanBefore("; ", ")"); ok {
 		ua.Security = parseSecurity(l)
 	}
