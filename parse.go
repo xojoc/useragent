@@ -214,8 +214,10 @@ func parseVersion(l *lex, ua *UserAgent, sep string) bool {
 	return true
 }
 
-var appleVersionRegexp = regexp.MustCompile(`(?:[^\)]+?)\b(\d+_\d+(_\d+)?)\b`)
-var genericVersionRegexp = regexp.MustCompile(`(?:[^\)]*?) (\d+\.\d+(\.\d+)?)\b`)
+// Regexps need to match start of string to prevent greedily finding
+//  version numbers from much later in the UA string
+var appleVersionRegexp = regexp.MustCompile(`^(?:[^\)]+?)\b(\d+_\d+(_\d+)?)\b`)
+var genericVersionRegexp = regexp.MustCompile(`^(?:[^\)]*?) (\d+\.\d+(\.\d+)?)\b`)
 
 func parseOSVersion(l *lex, ua *UserAgent) bool {
 	switch ua.OS {
