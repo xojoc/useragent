@@ -24,6 +24,7 @@ import (
 var browsers = map[string]*url.URL{
 	"Chrome":    u("http://www.chromium.org/"),
 	"Dillo":     u("http://www.dillo.org/"),
+	"Edge":      u("https://www.microsoft.com/en-us/windows/microsoft-edge"),
 	"Firefox":   u("https://www.mozilla.org/en-US/firefox"),
 	"IceCat":    u("https://www.gnu.org/software/gnuzilla/"),
 	"Iceweasel": u("https://wiki.debian.org/Iceweasel"),
@@ -243,18 +244,26 @@ func parseChromeSafari(l *lex) *UserAgent {
 			return nil
 		}
 	}
-	if ua.OS == OSAndroid {
-		if l.match("Mobile") {
-			ua.Mobile = true
-		} else {
-			ua.Tablet = true
-		}
+
+	if l.match("Mobile") && !ua.Tablet {
+		ua.Mobile = true
 	}
+	if ua.OS == OSAndroid && !ua.Mobile {
+		ua.Tablet = true
+	}
+
+	// Identify non-Chrome browsers with Chromelike UAs:
 	if _, ok := l.span("OPR/"); ok {
 		if !parseVersion(l, ua, " ") {
 			return nil
 		}
 		ua.Name = "Opera"
+	}
+	if _, ok := l.span("Edge/"); ok {
+		if !parseVersion(l, ua, " ") {
+			return nil
+		}
+		ua.Name = "Edge"
 	}
 
 	return ua
