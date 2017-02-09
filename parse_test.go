@@ -396,6 +396,34 @@ func TestIE(t *testing.T) {
 	}
 }
 
+func TestEdge(t *testing.T) {
+	var got *UserAgent
+	want := &UserAgent{}
+
+	got = Parse(`Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10136`)
+	want.Type = Browser
+	want.OS = "Windows"
+	want.OSVersion = mustParse("10.0")
+	want.Name = "Edge"
+	want.Version = mustParse("12.10136.0")
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Mobile Safari/537.36 Edge/12.10136`)
+	want.Type = Browser
+	want.OS = "Windows"
+	want.OSVersion = mustParse("10.0")
+	want.Name = "Edge"
+	want.Version = mustParse("12.10136.0")
+	want.Mobile = true
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+}
+
 func TestGeneric(t *testing.T) {
 	var got *UserAgent
 	want := &UserAgent{}
