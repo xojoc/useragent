@@ -1,17 +1,4 @@
-/* Copyright (C) 2015 by Alexandru Cojocaru */
-
-/* This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+// Written by https://xojoc.pw. GPLv3 or later.
 
 package useragent
 
@@ -19,7 +6,79 @@ import (
 	"net/url"
 )
 
-// keep the sorted
+// Keep them sorted
 var crawlers = map[string]*url.URL{
-	"Googlebot": u("http://www.google.com/bot.html"),
+	"Googlebot":      u("http://www.google.com/bot.html"),
+	"Googlebot News": u("https://support.google.com/news/publisher/answer/93977"),
+}
+
+func parseCrawler(l *lex) *UserAgent {
+	for _, f := range []parseFn{parseGooglebot, parseGooglebotSmartphone} {
+		if ua := f(newLex(l.s)); ua != nil {
+			return ua
+		}
+	}
+	return nil
+}
+
+// TODO: finish
+// https://support.google.com/webmasters/answer/1061943
+func parseGooglebot(l *lex) *UserAgent {
+	ua := new()
+
+	// Googlebot
+	if !l.match("Mozilla/5.0 (compatible; Googlebot/") {
+		return nil
+	}
+
+	ua.Type = Crawler
+	ua.Name = "Googlebot"
+
+	if !parseVersion(l, ua, ";") {
+		return nil
+	}
+	if !l.match(" +http://www.google.com/bot.html)") {
+		return nil
+	}
+	return ua
+}
+
+func parseGooglebotSmartphone(l *lex) *UserAgent {
+	ua := new()
+
+	if _, ok := l.span("Mozilla"); !ok {
+		return nil
+	}
+
+	if _, ok := l.span("Linux"); !ok {
+		return nil
+	}
+
+	if _, ok := l.span("Android"); !ok {
+		return nil
+	}
+
+	if _, ok := l.span("AppleWebKit"); !ok {
+		return nil
+	}
+
+	if _, ok := l.span("Chrome"); !ok {
+		return nil
+	}
+
+	if _, ok := l.span("Mobile Safari"); !ok {
+		return nil
+	}
+
+	if _, ok := l.span("Googlebot/"); !ok {
+		return nil
+	}
+
+	if !parseVersion(l, ua, ";") {
+		return nil
+	}
+	ua.Type = Crawler
+	ua.Name = "Googlebot"
+	ua.Mobile = true
+	return ua
 }

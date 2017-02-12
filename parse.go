@@ -1,29 +1,15 @@
-/* Copyright (C) 2015 by Alexandru Cojocaru */
-
-/* This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+// Written by https://xojoc.pw. GPLv3 or later.
 
 // Package useragent parses a user agent string.
-package useragent
-
-// import "xojoc.pw/useragent"
+package useragent // import "xojoc.pw/useragent"
 
 import (
 	"fmt"
-	"github.com/blang/semver"
 	"net/url"
 	"regexp"
 	"strings"
+
+	"github.com/blang/semver"
 )
 
 type Type int
@@ -55,7 +41,7 @@ func (a Type) String() string {
 	case Library:
 		return "Library"
 	default:
-		panic("")
+		panic("cannot happen")
 	}
 }
 
@@ -153,7 +139,8 @@ type parseFn func(l *lex) *UserAgent
 // Try to extract information about an user agent from uas.
 // Since user agent strings don't have a standard, this function uses heuristics.
 func Parse(uas string) *UserAgent {
-	for _, f := range []parseFn{parseBrowser, parseGeneric} {
+	// NOTE: parse functions order matters.
+	for _, f := range []parseFn{parseCrawler, parseBrowser, parseGeneric} {
 		if ua := f(newLex(uas)); ua != nil {
 			ua.Original = uas
 			return ua
