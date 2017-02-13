@@ -8,8 +8,12 @@ import (
 
 // Keep them sorted
 var crawlers = map[string]*url.URL{
-	"Googlebot":      u("http://www.google.com/bot.html"),
-	"Googlebot News": u("https://support.google.com/news/publisher/answer/93977"),
+	"Google AdsBot":    u("https://support.google.com/webmasters/answer/1061943"),
+	"Google AdSense":   u("https://support.google.com/webmasters/answer/1061943"),
+	"Googlebot":        u("http://www.google.com/bot.html"),
+	"Googlebot Images": u("https://support.google.com/webmasters/answer/1061943"),
+	"Googlebot News":   u("https://support.google.com/news/publisher/answer/93977"),
+	"Googlebot Video":  u("https://support.google.com/webmasters/answer/1061943"),
 }
 
 func parseCrawler(l *lex) *UserAgent {
@@ -21,17 +25,40 @@ func parseCrawler(l *lex) *UserAgent {
 	return nil
 }
 
-// TODO: finish
-// https://support.google.com/webmasters/answer/1061943
 func parseGooglebot(l *lex) *UserAgent {
 	ua := new()
+	ua.Type = Crawler
+
+	// Alternate Googlebots
+	if l.match("Googlebot") {
+		if l.match("-News") {
+			ua.Name = "Googlebot News"
+		} else if parseNameVersion(l, ua) {
+			switch ua.Name {
+			case "":
+				ua.Name = "Googlebot"
+			case "-Image":
+				ua.Name = "Googlebot Images"
+			default:
+				ua.Name = "Googlebot " + ua.Name[1:]
+			}
+		} else {
+			return nil
+		}
+		return ua
+	} else if l.match("Mediapartners-Google") {
+		ua.Name = "Google AdSense"
+		return ua
+	} else if l.match("AdsBot-Google") {
+		ua.Name = "Google AdsBot"
+		return ua
+	}
 
 	// Googlebot
 	if !l.match("Mozilla/5.0 (compatible; Googlebot/") {
 		return nil
 	}
 
-	ua.Type = Crawler
 	ua.Name = "Googlebot"
 
 	if !parseVersion(l, ua, ";") {
