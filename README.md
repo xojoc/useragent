@@ -33,12 +33,17 @@ If you think *useragent* doesn't parse correctly a particular user agent string,
  * High precision in detection of the most common browsers/crawlers.
  * Detects mobile/tablet devices.
  * OS detection.
- * URL with more information about the user agent (usually its the home page).
+ * URL with more information about the user agent (usually it's the home page).
  * [Security](http://godoc.org/xojoc.pw/useragent#Security) level detection when reported by browsers.
 
 
 # Who?
 *useragent* was written by Alexandru Cojocaru (http://xojoc.pw) and uses [blang/semver](https://github.com/blang/semver) to parse versions.
+
+Thanks a lot to [@brendanwalters](https://github.com/brendanwalters) (from http://pendo.io) for the contributions.
+
+# [Donate!](https://liberapay.com/xojoc)
+
 
 # License
 *useragent* is released under the GPLv3 or later, see [COPYING](COPYING).

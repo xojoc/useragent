@@ -1,25 +1,13 @@
-/* Copyright (C) 2015 by Alexandru Cojocaru */
-
-/* This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+// Written by https://xojoc.pw. GPLv3 or later.
 
 package useragent
 
 import (
 	"fmt"
-	"github.com/blang/semver"
 	"log"
 	"testing"
+
+	"github.com/blang/semver"
 )
 
 func ExampleParse() {
@@ -435,21 +423,11 @@ func TestGeneric(t *testing.T) {
 	want.Name = "Dillo"
 	want.Version = mustParse("0.8.6-i18n-misc")
 	want.Security = SecurityUnknown
-	//	want.URL = u("http://www.dillo.org/")
+	want.URL = u("http://www.dillo.org/")
 	if !eqUA(want, got) {
 		t.Errorf("expected %+v, got %+v\n", want, got)
 	}
 
-	got = Parse(`Googlebot/2.1 (+http://www.google.com/bot.html)`)
-	want.Type = Crawler
-	want.OS = "unknown"
-	want.OSVersion = semver.Version{}
-	want.Name = "Googlebot"
-	want.Version = mustParse("2.1.0")
-	want.Security = SecurityUnknown
-	if !eqUA(want, got) {
-		t.Errorf("expected %+v, got %+v\n", want, got)
-	}
 }
 
 func TestPhantomJS(t *testing.T) {
@@ -594,6 +572,113 @@ func TestOpera(t *testing.T) {
 	want.Version = mustParse("15.0.1147")
 	want.Security = SecurityUnknown
 	want.Mobile = true
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+}
+
+func TestGoogleBot(t *testing.T) {
+	var got *UserAgent
+	want := &UserAgent{}
+	want.Mobile = false
+	want.Tablet = false
+
+	got = Parse(`Googlebot/2.1 (+http://www.google.com/bot.html)`)
+	want.Type = Crawler
+	want.OS = "unknown"
+	want.OSVersion = semver.Version{}
+	want.Name = "Googlebot"
+	want.Version = mustParse("2.1.0")
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)`)
+	want.Type = Crawler
+	want.OS = "unknown"
+	want.OSVersion = semver.Version{}
+	want.Name = "Googlebot"
+	want.Version = mustParse("2.1")
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`Googlebot-News`)
+	want.Type = Crawler
+	want.OS = "unknown"
+	want.OSVersion = semver.Version{}
+	want.Name = "Googlebot News"
+	want.Version = semver.Version{}
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`Googlebot-Image/1.0`)
+	want.Type = Crawler
+	want.OS = "unknown"
+	want.OSVersion = semver.Version{}
+	want.Name = "Googlebot Images"
+	want.Version = mustParse("1.0")
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`Googlebot-Video/1.0`)
+	want.Type = Crawler
+	want.OS = "unknown"
+	want.OSVersion = semver.Version{}
+	want.Name = "Googlebot Video"
+	want.Version = mustParse("1.0")
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`Mediapartners-Google`)
+	want.Type = Crawler
+	want.OS = "unknown"
+	want.OSVersion = semver.Version{}
+	want.Name = "Google AdSense"
+	want.Version = semver.Version{}
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`AdsBot-Google (+http://www.google.com/adsbot.html)`)
+	want.Type = Crawler
+	want.OS = "unknown"
+	want.OSVersion = semver.Version{}
+	want.Name = "Google AdsBot"
+	want.Version = semver.Version{}
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`AdsBot-Google-Mobile-Apps`)
+	want.Type = Crawler
+	want.OS = "unknown"
+	want.OSVersion = semver.Version{}
+	want.Name = "Google AdsBot"
+	want.Version = semver.Version{}
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.96 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)`)
+	want.Type = Crawler
+	want.Mobile = true
+	want.OS = "unknown"
+	want.OSVersion = semver.Version{}
+	want.Name = "Googlebot"
+	want.Version = mustParse("2.1")
+	want.Security = SecurityUnknown
 	if !eqUA(want, got) {
 		t.Errorf("expected %+v, got %+v\n", want, got)
 	}
