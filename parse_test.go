@@ -616,6 +616,61 @@ func TestGoogleBot(t *testing.T) {
 		t.Errorf("expected %+v, got %+v\n", want, got)
 	}
 
+	got = Parse(`Googlebot-Image/1.0`)
+	want.Type = Crawler
+	want.OS = "unknown"
+	want.OSVersion = semver.Version{}
+	want.Name = "Googlebot Images"
+	want.Version = mustParse("1.0")
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`Googlebot-Video/1.0`)
+	want.Type = Crawler
+	want.OS = "unknown"
+	want.OSVersion = semver.Version{}
+	want.Name = "Googlebot Video"
+	want.Version = mustParse("1.0")
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`Mediapartners-Google`)
+	want.Type = Crawler
+	want.OS = "unknown"
+	want.OSVersion = semver.Version{}
+	want.Name = "Google AdSense"
+	want.Version = semver.Version{}
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`AdsBot-Google (+http://www.google.com/adsbot.html)`)
+	want.Type = Crawler
+	want.OS = "unknown"
+	want.OSVersion = semver.Version{}
+	want.Name = "Google AdsBot"
+	want.Version = semver.Version{}
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
+	got = Parse(`AdsBot-Google-Mobile-Apps`)
+	want.Type = Crawler
+	want.OS = "unknown"
+	want.OSVersion = semver.Version{}
+	want.Name = "Google AdsBot"
+	want.Version = semver.Version{}
+	want.Security = SecurityUnknown
+	if !eqUA(want, got) {
+		t.Errorf("expected %+v, got %+v\n", want, got)
+	}
+
 	got = Parse(`Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.96 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)`)
 	want.Type = Crawler
 	want.Mobile = true
