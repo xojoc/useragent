@@ -21,8 +21,8 @@ Parsing user agent strings is a hell. There is no standard for user agent string
   * http://docs.aws.amazon.com/silk/latest/developerguide/user-agent.html
 
 for the supported user agents see:
-  * browsers: [browser.go](browser.go)
-  * crawlers: [crawler.go](crawler.go)
+  * browsers: [browser.go](https://github.com/xojoc/useragent/blob/master/browser.go)
+  * crawlers: [crawler.go](https://github.com/xojoc/useragent/blob/master/crawler.go)
 
 If you think *useragent* doesn't parse correctly a particular user agent string, just open an issue :).
 
@@ -46,4 +46,4 @@ Thanks a lot to [@brendanwalters](https://github.com/brendanwalters) (from http:
 
 
 # License
-*useragent* is released under the GPLv3 or later, see [COPYING](COPYING).
+*useragent* is released under the GPLv3 or later, see [COPYING](https://github.com/xojoc/useragent/blob/master/COPYING).
