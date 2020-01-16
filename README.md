@@ -38,11 +38,11 @@ If you think *useragent* doesn't parse correctly a particular user agent string,
 
 
 # Who?
-*useragent* was written by Alexandru Cojocaru (http://xojoc.pw) and uses [blang/semver](https://github.com/blang/semver) to parse versions.
+*useragent* was written by [Alexandru Cojocaru](http://xojoc.pw) and uses [blang/semver](https://github.com/blang/semver) to parse versions.
 
 Thanks a lot to [@brendanwalters](https://github.com/brendanwalters) (from http://pendo.io) for the contributions.
 
-# [Donate!](https://liberapay.com/xojoc)
+# [Donate!](https://xojoc.pw/donate)
 
 
 # License
